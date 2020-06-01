@@ -1,0 +1,644 @@
+---
+title: Urban and socio-economic correlates of property price evolution\:\ Application to Dublin's costal area
+affiliation:
+  institution-columnar: true
+
+  institution:
+    - name: Dublin City University
+      department: Business School
+      location: Glasnevin, Dublin 09
+      email: damien.dupre@dcu.ie
+      mark: 1
+      author:
+        - name: Damien Dupré
+        
+keywords: ["Property price", "Housing Market", "Feature Analysis", "Machine Learning", "Geocoding"]
+abstract: |
+  Understanding the characteristics of the housing market is essential for both sellers and buyers. However, the housing market is influenced by multiple factors. In this paper, the urban and socio-economic structure of an area is used to predict the price of 10389 houses sold in 2018 in the city of Dublin. More precisely, the direct distance from each house to 160 urban features taken from OpenStreetMap is calculated, and an extreme gradient boosting linear regression performed. Using these features, the model explains 47\% of the housing price variance. The most important features in this model are the proximity to an embassy and to a grassland. In addition, the results of a population census from 2016 are also used to correlate with the price of houses. From this census, 48 features are used as the input of a gradient boost linear regression model. In all, the socio-economic features are explaining 42\% of the housing price variance as well. The most important socio-economic features are; the density of houses having more than eight or more rooms in the area, the density of young children, and the density of individuals reporting that they have no religion. By taking into account either urban or socio-economic features, it is possible to accurately estimate housing prices and to predict their evolution.
+
+bibliography: [references.bib, r-references.bib]
+output:
+  bookdown::pdf_book:
+    base_format: rticles::ieee_article
+    
+# output: word_document
+    
+header-includes:
+  - \usepackage{graphicx}
+---
+
+(ref:distrib-plot) Overall (A) and geographic (B) distribution of the houses prices density in the city of Dublin in 2018. The geographic distribution was obtained by using a generalized additive model with soap film smooth parameter to take into account the influence of coastal boundaries. Geographic estimates outside of the 95\% Confidence Interval were removed.
+(ref:osm-features-xgb) Property price prediction accuracy (A) and Property price prediction error (B) using urban features with XGBoost.
+(ref:osm-features-table) Urban features importance (higher than 1\%).
+(ref:census-features-xgb) Property price prediction accuracy (A) and Property price prediction error (B) using socio-economic features with XGBoost.
+(ref:census-features-table) Socio-economic features importance (higher than 1\%).
+
+```{r setup, include = FALSE}
+# options ----------------------------------------------------------------------
+set.seed(123)
+options(scipen=999)
+knitr::opts_chunk$set(
+  cache.extra = knitr::rand_seed, 
+  message = FALSE, 
+  warning = FALSE, 
+  error = FALSE, 
+  echo = FALSE
+  )
+
+# libraries --------------------------------------------------------------------
+library(tidyverse)
+library(magrittr)
+library(here)
+library(lubridate)
+library(papaja)
+library(patchwork)
+library(kableExtra)
+library(latex2exp)
+library(yardstick)
+library(sf)
+library(tmap)
+library(lwgeom)
+library(osmdata)
+library(OpenStreetMap)
+library(mgcv)
+library(xgboost)
+
+# R package references ---------------------------------------------------------
+#papaja::r_refs(file = "dsaa_application_manuscript/r-references.bib")
+
+# functions --------------------------------------------------------------------
+source(here::here("script/functions_project.R"))
+source(here::here("script/osm_dublin_features.R"))
+# data path --------------------------------------------------------------------
+data_path <- here::here() %>% 
+  dirname() %>% 
+  dirname() %>% 
+  paste0("/data/property_price_ireland_data")
+
+# all price registry------------------------------------------------------------
+data_dublin_geocoded <- file.path(data_path, "data_dublin_geocoded_clean.rds") %>% 
+  readr::read_rds() %>%
+  janitor::clean_names() %>%
+  dplyr::mutate(
+    year_fact = as.factor(as.character(year))
+  )
+
+mean_dat <- mean(data_dublin_geocoded$price)
+sd_dat <- sd(data_dublin_geocoded$price)
+
+data_dublin_geocoded <- data_dublin_geocoded %>%
+  dplyr::filter(price > mean_dat - sd_dat)
+
+# all dublin features ----------------------------------------------------------
+data_dublin_2018_features <- data_path %>%
+  file.path("data_dublin_2018_osm_features.rds") %>%
+  readr::read_rds() %>% 
+  janitor::remove_empty(which = "cols") %>% 
+  janitor::clean_names() %>%
+  dplyr::mutate(geog_id = stringr::str_remove(geogid, "[A]"))
+
+list_geogid <- unique(data_dublin_2018_features$geog_id)
+
+data_dublin_2018_features <- c(
+  "carers.csv",
+  "disabilty_age_group.csv", 
+  "general_health.csv",
+  "housing_occupancy.csv",
+  "housing_rooms.csv",
+  "housing_tenure.csv",
+  "housing_type.csv",
+  "population.csv",
+  "religion.csv"
+  ) %>%
+  purrr::map(read_join) %>% 
+  purrr::reduce(dplyr::left_join) %>% 
+  dplyr::inner_join(data_dublin_2018_features, by = c("GEOG_ID" = "geog_id"))
+
+# train test split -------------------------------------------------------------
+train_index <- sample(1:nrow(data_dublin_2018_features), 0.8 * nrow(data_dublin_2018_features))
+test_index <- setdiff(1:nrow(data_dublin_2018_features), train_index)
+
+train_dublin_2018_features <- data_dublin_2018_features[train_index, ]
+test_dublin_2018_features <- data_dublin_2018_features[test_index, ]
+
+# dublin map -------------------------------------------------------------------
+# boundaries_dublin <-
+#   osmdata::opq(bbox = 'Dublin, Ireland') %>%
+#   osmdata::add_osm_feature(key = 'admin_level', value = '7') %>%
+#   osmdata::osmdata_sf() %>%
+#   osmdata::unique_osmdata()
+# 
+# bb <- st_bbox(boundaries_dublin$osm_multipolygons$geometry)
+# # Defining a buffer
+# buffer <- 0.1
+# p_big <- rbind(
+#   c(bb[1] - buffer, bb[2] - buffer),
+#   c(bb[1] - buffer, bb[4] + buffer),
+#   c(bb[3] + buffer, bb[4] + buffer),
+#   c(bb[3] + buffer, bb[2] - buffer),
+#   c(bb[1] - buffer, bb[2] - buffer)
+#   )
+# # Putting the coordinates into a squared polygon object
+# pol_dublin <- st_polygon(list(p_big)) %>% st_geometry
+# # Providing the SRID (here, unprojected lon/lat)
+# st_crs(pol_dublin) <- 4326
+# 
+# # get Dublin coast line ------------------------------------------------------
+# coast_dublin <- opq(bbox = st_bbox(pol_dublin)) %>%
+#   add_osm_feature(key = 'natural', value = 'coastline') %>%
+#   osmdata_sf %>% unique_osmdata
+# 
+# blade_dublin <- coast_dublin$osm_lines$geometry %>% st_union %>% st_line_merge
+# 
+# ls <- st_linestring(blade_dublin[[1]][[1]])
+# 
+# dublin_multipol <- st_split(st_geometry(pol_dublin), st_geometry(ls))
+# 
+# readr::write_rds(dublin_multipol, here::here("data/dublin_multipol.rds"))
+dublin_multipol <- readr::read_rds(here::here("data/dublin_multipol.rds"))
+
+dublin_sea <- dublin_multipol[[1]][[2]] %>% 
+  st_polygon %>% 
+  st_geometry
+st_crs(dublin_sea) <- 4326
+```
+
+# Introduction
+
+First time property acquisition is an important achievement in individuals' lifetime. It provides not only housing security but also the feeling of being a landowner. However, access to the status of landowner is a challenge for low to middle income earners as it corresponds to significant spending which will potentially have budget impacts for years [@savage2014property]. For this reason, understanding property price markets as well as factors driving price is essential to identify investment opportunities.
+
+Beside their inherent characteristics such as size, design and materials [@bourassa2007spatial; @liu2013spatial], property valuation is dictated by multiple external factors explaining their spatial autocorrelation [@basu1998analysis]. Some of these factors are macroeconomic [@antonakakis2016dynamic], related to the evolution of population general wealth while others are related to the characteristics of the neighbourhood [@dubin1998predicting]. These characteristics include the urban and socio economic structure of the neighbourhood [@goodman1998housing]. However, it is difficult to evaluate the influence of such external factors on property valuation [@clapp2002predicting]. By using machine learning algorithms, prediction of house prices has become more and more accurate. Techniques used usually include artificial neural networks due to the volatility of the market [@limsombunchai2004house; @feng2015comparing; @selim2009determinants]. 
+
+In this paper, an alternative machine learning algorithm is used to identify urban and socio-economic correlates of property price evolution in the area of Dublin, Ireland in 2018. Due to the high number of potential features, an eXtreme Gradient Boosting (XGBoost) regression model is believed to obtain the best results with low parameter customisation and high speed.
+
+# Method
+
+Since 2010, under the Irish Property Services (Regulation) Act, all individuals acquiring a property in Ireland have to declare it to Property Services Regulatory Authority (PSRA). They must provide details such as the date of sale, the price and the address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes [@rppr2020]. Data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser, and it must be noted that errors may occur when the data is being filed. 
+
+Because of the evolution of urban planning and the evolution of socio-economic features measured by the 2016 census, only houses sold in 2018 were processed to avoid potential temporal incoherences. In 2018, a total of 10395 property in the area of Dublin were sold, and these constitute the database used to identify the urban and socio-economic correlates of property prices.
+
+In order to evaluate the spacial distribution of the property sold, property addresses were geocoded (i.e., converted to latitude and longitude) using the OpenStreetMap API. OpenStreetMap is a collaborative project which aims to create and provide access to free editable maps of the world [@haklay2008openstreetmap]. 
+
+To estimate the geographical distribution of the price density, multiple methods such as multiple regression [@mccluskey2000application] or Bayesian smoothing [@clapp2002predicting] have been employed. While these methods are efficient in a non-restricted space, they have limitations when they are used in coastal areas. To deal with the influence of boundaries on price estimation, a generalised additive model using soap film smoothing has been used [@wood2008soap].
+
+## Distance to urban features
+
+OpenStreetMap combines information about more than 400 urban features including road information and building information to categorize features such as amenities, leisure or tourism structures [@openstreetmap2020]. Among these features, only 160 are available or relevant to the Dublin Area. The distance between each property and the closest point corresponds to each of the 160 urban features.
+
+## Density of socio-economic features
+
+In addition to the distance to every urban feature, each house sold in 2018 was related to 48 socio-economic features of the small area including the house, as measured by the Irish census 2016 [@cso2020]. The results of Irish 2016 census consultation is accessible through both the Central Statistics Office and All-Island Research Observatory. The data obtained can be mapped over small area boundaries which are fractions of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the characteristics of each small area; including the proportion of housing types, number of rooms, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area. For anonymisation purposes, the results from small areas having less than five respondents to the census were converted to a proportion of five respondents.
+
+## Gradient Boosting Regressions
+
+Lastly, an eXtreme Gradient Boosting (XGBoost) regression model was calculated to examine the extent to which house prices rely on urban and on socio-economic features. The XGBoost algorithm optimizes the prediction accuracy by performing iterative least-squares regressions (set to 100 iterations as the best trade-off between accuracy and speed), thereby minimizing the root mean squared error [@friedman2001greedy; @chen2016xgboost]. The original dataset has been randomly split to 80% for training and 20% for testing the models. Models accuracy is estimated using the coefficient of determination ($R^2$), the Root Mean Square Error ($RMSE$) and the Mean Absolute Error ($MAE$) of the predicted property price values of the test dataset.  
+
+# Results
+
+```{r gam-model}
+# bound ------------------------------------------------------------------------
+gam_boundaries <- dublin_multipol[[1]][[1]][[1]]
+
+bound <- list(
+  list(
+    x = gam_boundaries[,1], 
+    y = gam_boundaries[,2], 
+    f = rep(0, nrow(gam_boundaries))
+  )
+)
+
+# knots ------------------------------------------------------------------------
+# boundaries_dublin <- 
+#   osmdata::opq(bbox = 'Dublin, Ireland') %>%
+#   osmdata::add_osm_feature(key = 'admin_level', value = '7') %>%
+#   osmdata::osmdata_sf() %>% 
+#   osmdata::unique_osmdata()
+# 
+# bb <- st_bbox(boundaries_dublin$osm_multipolygons$geometry)
+# 
+# readr::write_rds(bb, here::here("data/bb.rds"))
+
+bb <- readr::read_rds(here::here("data/bb.rds"))
+
+bound.grid.lng <- seq(from = bb[1], to = bb[3], len = 10)
+bound.grid.lat<- seq(from = bb[2], to = bb[4], len = 10)
+
+bound.grid.map <- expand.grid(
+  lng = bound.grid.lng, 
+  lat = bound.grid.lat
+  )
+
+names(bound.grid.map) <- c("x","y")
+
+knots <- bound.grid.map[with(bound.grid.map, inSide(bound, x, y)), ]
+
+names(knots) <- c("lng", "lat")
+names(bound[[1]]) <- c("lng", "lat", "f")
+
+dublin_sea_frame <- dublin_multipol[[1]][[2]]
+
+knots$pb <- apply(knots, 1, function(row) {  
+  sf::st_is_within_distance(
+    dublin_sea_frame,
+    sf::st_point(c(row["lng"],row["lat"])),
+    dist = 0.001
+  ) %>% 
+    as.numeric()
+})
+
+knots_pb <- knots %>%
+  dplyr::filter(pb == 1)
+
+knots <- dplyr::anti_join(knots, knots_pb, by = c("lng", "lat"))
+
+# model ------------------------------------------------------------------------
+gam_dublin_gps <- mgcv::gam(
+  price ~ s(lng, lat, bs = "so", xt = list(bnd = bound)), 
+  data = dplyr::filter(data_dublin_geocoded, year == 2018), 
+  method = "REML", 
+  knots = knots,
+  family = gaussian(link = "identity")
+)
+
+gam_pred <- gam_density(gam_dublin_gps, too.far = 0.05, n.grid = 30)
+```
+
+In 2018, the average price of a sold property in Dublin was `r scales::dollar(round(mean_dat, 0), suffix = "", prefix = "€")` (SD = `r scales::dollar(round(sd_dat, 0), suffix = "", prefix = "€")`). In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
+
+```{r distrib-plot, fig.env='figure*', fig.height=3, out.width='0.98\\textwidth', fig.cap="(ref:distrib-plot)"}
+price_density <- data_dublin_geocoded %>%
+  dplyr::filter(year == 2018) %>%
+  magrittr::use_series(price) %>%
+  stats::density() %$%
+  data.frame(x, y) %>%
+  ggplot() +
+  geom_segment(aes(
+    x = x,
+    xend = x,
+    y = 0,
+    yend = y,
+    color = x
+  )) +
+  scale_x_continuous("Price", labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_y_continuous("Density") +
+  scale_color_gradient(
+    low = '#3a53a4', 
+    high = '#ed1c24', 
+    ) +
+  theme_apa() +
+  theme(
+    text = element_text(family = "serif", size = 6),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    legend.position = "none"
+  ) +
+  ggtitle("A")
+
+map_density <- gam_pred %>%
+  dplyr::filter(value > 200000) %>%
+  ggplot() +
+  geom_raster(aes(x = lng, y = lat, fill = value)) +
+  geom_sf(data = dublin_sea, fill = "light blue") +
+  scale_fill_gradient(
+    "Price Density", 
+    low = '#3a53a4', 
+    high = '#ed1c24', 
+    trans = "log",
+    breaks = c(250000, 1000000), 
+    labels = scales::dollar_format(suffix = "", prefix = "€")) +
+  scale_x_continuous(
+    "Longitude", 
+    limits = c(-6.5, -6), 
+    breaks = seq(-6.5, -6, 0.2)) +
+  scale_y_continuous(
+    "Latitude", 
+    limits = c(53.2, 53.5), 
+    breaks = seq(53.2, 53.5, 0.1)) +
+  theme_apa() +
+  theme(
+    text = element_text(family = "serif", size = 6),
+    legend.position = "none"
+  ) +
+  ggtitle("B")
+
+price_density + map_density
+```
+
+The density of housing prices reveals a unimodal distribution of property prices (Figure \@ref(fig:distrib-plot)A). In addition, the geographical distribution of property prices indicates a higher valuation in the South-West of the city as well as on the coast line (Figure \@ref(fig:distrib-plot)B).
+
+## Correlates with urban features
+
+```{r osm-features}
+train_tbl_y <- train_dublin_2018_features %>%
+  dplyr::select(price) %>%
+  as.matrix()
+train_tbl_x <- train_dublin_2018_features %>%
+  dplyr::select(any_of(osm_dublin_features)) %>% 
+  as.matrix()
+
+test_tbl_y <- test_dublin_2018_features %>%
+  dplyr::select(price) %>%
+  as.matrix()
+test_tbl_x <- test_dublin_2018_features %>%
+  dplyr::select(any_of(osm_dublin_features)) %>% 
+  as.matrix()
+
+xgmodel <- xgboost::xgboost(
+  data = train_tbl_x,
+  label = train_tbl_y,
+  objective = "reg:linear",
+  eval_metric = "rmse",
+  verbose = 0,
+  nround = 100
+)
+
+pred <- predict(xgmodel, test_tbl_x)
+
+result <- data.frame(pred = pred, raw = test_tbl_y)
+
+metrics_result <- result %>% 
+  yardstick::metrics(price, pred) %>% 
+  select(-.estimator) %>% 
+  mutate(.estimate = round(.estimate, 2))
+
+lm_result <- lm(pred ~ price, result) %>%
+  papaja::apa_print.lm()
+```
+
+Using the XGBoost algorithm, the 160 urban features are explaining `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
+
+```{r osm-features-xgb, fig.cap="(ref:osm-features-xgb)", fig.height=8, out.width='0.98\\columnwidth'}
+result_accuracy <- result %>%
+  ggplot(aes(x = price, y = pred)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(
+    method = "lm",
+    fullrange = TRUE,
+    se = TRUE,
+    color = "black",
+    size = 0.1
+  ) +
+  scale_x_continuous(
+    "Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  scale_y_continuous(
+    "Predicted Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  theme_apa() +
+  theme(
+    text = element_text(family = "serif"),
+    legend.position = "none"
+  ) +
+  labs(
+    title = "A",
+    subtitle = latex2exp::TeX(paste(
+      "$R^2 =$", 
+      scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"]),
+      ";",
+      "$RMSE =$",
+      scales::dollar(
+        metrics_result$.estimate[metrics_result$.metric == "rmse"], 
+        suffix = "", 
+        prefix = "€"
+      ),
+      ";",
+      "$MAE =$",
+      scales::dollar(
+        metrics_result$.estimate[metrics_result$.metric == "mae"], 
+        suffix = "", 
+        prefix = "€"
+      )
+      )
+    )
+  )
+
+result_error <- result %>%
+  dplyr::mutate(diff_percent = (pred - price) / price) %>%
+  ggplot(aes(x = price, y = diff_percent)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(
+    color = "black",
+    se = TRUE,
+    fullrange = TRUE,
+    size = 0.1
+  ) +
+  scale_x_continuous(
+    "Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  scale_y_continuous(
+    "Predicted Property Price Error",
+    limits = c(-0.5, 0.5),
+    labels = scales::percent
+  ) +
+  theme_apa() +
+  theme(
+    text = element_text(family = "serif")
+  ) +
+  ggtitle("B")
+
+result_accuracy / result_error
+```
+
+The overall correlation of the predicted property prices with urban features is shown in Figure \@ref(fig:osm-features-xgb)A. It can be noticed that property prices situated at the low and the high end of the range are the most difficult to predict (Figure \@ref(fig:osm-features-xgb)B). A possible explanation is the absence of distinctive and recurrent patterns in urban features for these houses. However, the prices higher than €300,000 are potentially driving down the prediction accuracy due to outliers.
+
+```{r osm-features-table, results="asis"}
+table_osm <- xgb.importance(model = xgmodel) %>%
+  dplyr::filter(Gain > 0.01) %>%
+  dplyr::arrange(desc(Gain)) %>%
+  dplyr::mutate(across(where(is.numeric), scales::percent, accuracy = 0.1)) %>%
+  dplyr::select(Feature, Importance = Gain) %>%
+  tidyr::separate(Feature, c("Feature Category", "Feature Type"), sep = "_")
+
+table_osm %>% 
+  knitr::kable(
+    "latex",
+    caption = "(ref:osm-features-table)",
+    booktabs = TRUE,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(font_size = 8, full_width = TRUE)
+```
+
+By analysing their importance (Table \@ref(tab:osm-features-table)), the most relevant geographical features to predict housing prices are the distance to an embassy (`r table_osm$Importance[1]`) and the distance to natural grasslands such as parks and gardens (`r table_osm$Importance[2]`).
+
+## Correlates with socio-economic features
+
+```{r census-features}
+# census dublin features
+source(here::here("script/census_dublin_features.R"))
+
+train_tbl_y <- train_dublin_2018_features %>%
+  dplyr::select(price) %>%
+  as.matrix()
+train_tbl_x <- train_dublin_2018_features %>%
+  dplyr::select(any_of(census_dublin_features)) %>% 
+  as.matrix()
+
+test_tbl_y <- test_dublin_2018_features %>%
+  dplyr::select(price) %>%
+  as.matrix()
+test_tbl_x <- test_dublin_2018_features %>%
+  dplyr::select(any_of(census_dublin_features)) %>% 
+  as.matrix()
+
+xgmodel <- xgboost::xgboost(
+  data = train_tbl_x,
+  label = train_tbl_y,
+  objective = "reg:linear",
+  eval_metric = "rmse",
+  verbose = 0,
+  nround = 100
+)
+
+pred <- predict(xgmodel, test_tbl_x)
+
+result <- data.frame(pred = pred, raw = test_tbl_y)
+
+metrics_result <- result %>% 
+  yardstick::metrics(price, pred) %>% 
+  select(-.estimator) %>% 
+  mutate(.estimate = round(.estimate, 2))
+
+lm_result <- lm(pred ~ price, result) %>%
+  papaja::apa_print.lm()
+```
+
+Using the XGBoost algorithm, the 48 socio-economic features explain `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
+
+```{r census-features-xgb, fig.cap="(ref:census-features-xgb)", fig.height=8, out.width='0.98\\columnwidth'}
+result_accuracy <- result %>%
+  ggplot(aes(x = price, y = pred)) +
+  geom_point(alpha = 0.1) +
+  geom_smooth(
+    method = "lm",
+    fullrange = TRUE,
+    se = TRUE,
+    color = "black",
+    size = 0.1
+  ) +
+  scale_x_continuous(
+    "Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  scale_y_continuous(
+    "Predicted Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  theme_apa() +
+  theme(
+    text = element_text(family = "serif"),
+    legend.position = "none"
+  ) +
+    labs(
+    title = "A",
+    subtitle = latex2exp::TeX(paste(
+      "$R^2 =$", 
+      scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"]),
+      ";",
+      "$RMSE =$",
+      scales::dollar(
+        metrics_result$.estimate[metrics_result$.metric == "rmse"], 
+        suffix = "", 
+        prefix = "€"
+      ),
+      ";",
+      "$MAE =$",
+      scales::dollar(
+        metrics_result$.estimate[metrics_result$.metric == "mae"], 
+        suffix = "", 
+        prefix = "€"
+      )
+      )
+    )
+  )
+
+result_error <- result %>%
+  dplyr::mutate(diff_percent = (pred - price) / price) %>%
+  ggplot(aes(x = price, y = diff_percent)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(
+    color = "black",
+    se = TRUE,
+    fullrange = TRUE,
+    size = 0.1
+  ) +
+  scale_x_continuous(
+    "Property Price",
+    labels = scales::dollar_format(suffix = "", prefix = "€")
+  ) +
+  scale_y_continuous(
+    "Predicted Property Price Error",
+    limits = c(-0.5, 0.5),
+    labels = scales::percent
+  ) +
+  theme_apa() +
+  theme(text = element_text(family = "serif")) +
+  ggtitle("B")
+
+result_accuracy / result_error
+```
+
+The overall correlation of the predicted property prices with socio-economic features is shown in Figure \@ref(fig:census-features-xgb)A. Similar to the model used for urban features, the model based on socio-economic features reveals that prices lower than €300,000 lead to the highest errors in over-valuation while prices higher than €300,000 lead to systematic under-valuation errors (Figure \@ref(fig:census-features-xgb)B).
+
+```{r census-features-table, results="asis"}
+table_census <- xgb.importance(model = xgmodel) %>%
+  dplyr::filter(Gain > 0.01) %>%
+  dplyr::arrange(desc(Gain)) %>%
+  dplyr::mutate_if(is.numeric, scales::percent, accuracy = 0.1) %>%
+  dplyr::mutate(
+    `Feature Category` = case_when(
+      Feature %in% carers ~ "carers",
+      Feature %in% disabilty_age_group ~ "disabilty age group",
+      Feature %in% general_health ~ "general health",
+      Feature %in% housing_occupancy ~ "housing occupancy",
+      Feature %in% housing_rooms ~ "housing rooms",
+      Feature %in% housing_tenure ~ "housing tenure",
+      Feature %in% housing_type ~ "housing type",
+      Feature %in% population ~ "population",
+      Feature %in% religion ~ "religion"
+    )
+  )  %>% 
+  dplyr::mutate(
+    Feature = str_remove(Feature, "\\(Households\\)"),
+    Feature = str_remove(Feature, "% "),
+  ) %>%
+  dplyr::select(
+    `Feature Category`,
+    `Feature Type` = Feature,
+    Importance = Gain
+  )
+
+table_census %>%
+  knitr::kable(
+    "latex",
+    caption = "(ref:census-features-table)",
+    booktabs = T,
+    linesep = ""
+  ) %>%
+  kableExtra::kable_styling(font_size = 8)
+```
+
+According to the analysis of the relative importance of socio-economic features (Table \@ref(tab:census-features-table)), the most important socio-economic features are the proportion of large houses (i.e., houses with eight or more rooms) in the small area containing the property (`r table_census$Importance[1]`). It also appears that areas having a high proportion of young children (`r table_census$Importance[3]`), as well as the proportion of people reporting that they have no religion (`r table_census$Importance[2]`), influence the model.
+
+# Discussion
+
+While Dublin is a very specific city due to its low population density spread on a large surface, its housing market is one of the most expensive in Europe. The main reason is the structure of the market, mainly made of residential properties and few apartment buildings. In this study, the prices of 10387 properties sold in 2018 in the area of Dublin were analysed from the Property Services Regulatory Authority database in order to identify the potential factors correlating with these prices. The enforcement of a housing price registry has been shown as being an essential tool to regulate the housing market [@tomson2016property]. However, a major limitation of this study is the absence of characteristics for the property itself. Indeed, prices are mainly determined by factors such as the size of the property or the number of rooms. 
+
+Despite the absence of property characteristics, urban and socio-economic features were used to identify spatial correlates to the housing prices. Results revealed that proximity to embassies and grasslands is a driver of house prices. Embassies are in general located in the most expensive areas of cities which are also the most aesthetically pleasing and the most secure part of cities. In addition, the density of embassies and properties allocated to embassy staff reduces the density of property available on the market and drives their prices up. The distance to a park or a natural area is also a very important factor for house prices. Results also revealed that the density of large houses in the area and the proportion of individuals reporting having no religion are very important. Again, the size of the property sold was not included in the database; however, the higher the density of large houses in the area, the higher the probability for the property to be a large house. The second most important feature is the density of young children. While the literature is not conclusive of the link between wealth and family size, future research could investigate the mediation effect of house size between family size and property price. Finally, the relation with the expression of religious belief, or more precisely its absence, is a very interesting feature. Again, the relationship between religion and income is not confirmed by the literature. Whereas some studies reveal a positive correlation between religion and income [@guiso2003people; @elgin2013religion] others reveals no evidence of such relationship [@de2008does]. Here, it appears that prices of houses are higher in areas with a high density of people indicating that they have no religion.
+
+# Conclusion
+
+The evolution of housing prices is a pressing issue in most European capitals and specially in Dublin. Given their significant increase, houses are less and less affordable for individuals. By preforming a feature analysis with urban and socio-economic features, it is possible to evaluate and predict the potential price of a house. Indeed features such as the presence of embassies or parks are criteria that influence significantly the price of houses. Similarly, the characteristics of inhabitants in the area such as religion, health and age is correlated to the evolution of housing prices. These results allow an understanding of why some areas have higher prices than others.
+
+# Acknowledgement
+
+The authors would like to thank the developers of the following R packages used to process, analyse, display and report data: `r papaja::cite_r(file = "r-references.bib")`.
+
+# Data availability
+
+The R code and relevant data for statistical computing are available at https://github.com/damien-dupre/DSAA_2020.
+
+# References
