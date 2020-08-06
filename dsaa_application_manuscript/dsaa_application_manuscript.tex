@@ -328,6 +328,12 @@
 
 % Pandoc syntax highlighting
 
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{cslreferences}%
+  {\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces}%
+  {\par}
 
 % Pandoc header
 \usepackage{graphicx}
@@ -521,7 +527,7 @@ The density of housing prices reveals a unimodal distribution of property prices
 \hypertarget{correlates-with-urban-features}{%
 \subsection{Correlates with urban features}\label{correlates-with-urban-features}}
 
-Using the XGBoost algorithm, the 160 urban features are explaining 47\% of the property price variance (\(F(1, 2076) = 1,840.91\), \(p < .001\)) with a \(RMSE\) of €124,364 and a \(MAE\) of €83,963.61.
+Using the XGBoost algorithm, the 160 urban features are explaining 44\% of the property price variance (\(F(1, 2076) = 1,629.56\), \(p < .001\)) with a \(RMSE\) of €127,783 and a \(MAE\) of €85,115.25.
 
 \begin{figure}
 \includegraphics[width=0.98\columnwidth]{dsaa_application_manuscript_files/figure-latex/osm-features-xgb-1} \caption{Property price prediction accuracy (A) and Property price prediction error (B) using urban features with XGBoost.}\label{fig:osm-features-xgb}
@@ -538,32 +544,34 @@ The overall correlation of the predicted property prices with urban features is 
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
-amenity & embassy & 18.2\%\\
+amenity & embassy & 17.7\%\\
 natural & grassland & 6.7\%\\
-power & line & 2.3\%\\
-route & bus & 2.2\%\\
-boundary & administrative & 2.1\%\\
-boundary & political & 1.7\%\\
-route & ferry & 1.7\%\\
-highway & residential & 1.3\%\\
-highway & secondary & 1.2\%\\
-historic & yes & 1.2\%\\
-route & power & 1.1\%\\
-cycleway & lane & 1.1\%\\
-service & crossover & 1.1\%\\
-barrier & wall & 1.1\%\\
+route & bus & 2.3\%\\
+power & line & 2.2\%\\
+boundary & administrative & 1.5\%\\
+place & island & 1.5\%\\
+barrier & wall & 1.5\%\\
+cycleway & share & 1.4\%\\
+route & ferry & 1.3\%\\
+cutting & yes & 1.1\%\\
+amenity & bar & 1.1\%\\
+barrier & yes & 1.1\%\\
 place & locality & 1.1\%\\
-area & yes & 1.0\%\\
+boundary & political & 1.1\%\\
+route & road & 1.1\%\\
+highway & path & 1.1\%\\
+tunnel & yes & 1.0\%\\
+boundary & postal & 1.0\%\\
 \bottomrule
 \end{tabu}
 \end{table}
 
-By analysing their importance (Table \ref{tab:osm-features-table}), the most relevant geographical features to predict housing prices are the distance to an embassy (18.2\%) and the distance to natural grasslands such as parks and gardens (6.7\%).
+By analysing their importance (Table \ref{tab:osm-features-table}), the most relevant geographical features to predict housing prices are the distance to an embassy (17.7\%) and the distance to natural grasslands such as parks and gardens (6.7\%).
 
 \hypertarget{correlates-with-socio-economic-features}{%
 \subsection{Correlates with socio-economic features}\label{correlates-with-socio-economic-features}}
 
-Using the XGBoost algorithm, the 48 socio-economic features explain 42\% of the property price variance (\(F(1, 2076) = 1,508.10\), \(p < .001\)) with a \(RMSE\) of €131,322 and a \(MAE\) of €87,328.79.
+Using the XGBoost algorithm, the 48 socio-economic features explain 42\% of the property price variance (\(F(1, 2076) = 1,500.87\), \(p < .001\)) with a \(RMSE\) of €131,270 and a \(MAE\) of €86,891.85.
 
 \begin{figure}
 \includegraphics[width=0.98\columnwidth]{dsaa_application_manuscript_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (A) and Property price prediction error (B) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
@@ -580,43 +588,46 @@ The overall correlation of the predicted property prices with socio-economic fea
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
-housing rooms & 8 or more Rooms & 29.0\%\\
-religion & No Religion & 5.0\%\\
-population & Age 0 - 14 & 3.8\%\\
-housing rooms & 6 Rooms & 3.3\%\\
-general health & Very Good & 3.1\%\\
-population & Age 80 Plus & 2.8\%\\
+housing rooms & 8 or more Rooms & 28.2\%\\
+population & Age 0 - 14 & 4.5\%\\
+religion & No Religion & 4.4\%\\
+population & Age 80 Plus & 3.6\%\\
+general health & Very Good & 3.5\%\\
+housing rooms & 6 Rooms & 3.2\%\\
 housing tenure & Owner Occupier with Mortgage & 2.5\%\\
-general health & Good & 2.4\%\\
-religion & Other Catholic & 2.4\%\\
-housing rooms & 5 Rooms & 2.3\%\\
-disabilty age group & Persons with a disability aged 25 - 44 & 2.3\%\\
-religion & No Answer & 2.2\%\\
-housing rooms & 7 Rooms & 2.2\%\\
-disabilty age group & Persons with a disability aged 0 - 14 & 2.0\%\\
-population & Age 45 - 64 & 1.8\%\\
-population & Age 15 - 24 & 1.6\%\\
-disabilty age group & Persons with a disability aged 65 Plus & 1.6\%\\
-housing rooms & 3 Rooms & 1.6\%\\
-housing tenure & Social Rented & 1.6\%\\
-disabilty age group & Persons with a disability aged 45 - 64 & 1.5\%\\
-housing tenure & Rented Free of Rent & 1.4\%\\
-disabilty age group & Persons with a disability aged 15 - 44 & 1.4\%\\
-general health & Bad & 1.4\%\\
+disabilty age group & Persons with a disability aged 65 Plus & 2.3\%\\
+housing rooms & 5 Rooms & 2.2\%\\
+housing tenure & Social Rented & 2.2\%\\
+housing rooms & 4 Rooms & 2.1\%\\
+religion & Other Catholic & 2.0\%\\
+housing rooms & 7 Rooms & 1.9\%\\
+housing rooms & 3 Rooms & 1.8\%\\
+religion & No Answer & 1.8\%\\
+housing tenure & Private Rented & 1.6\%\\
+population & Age 45 - 64 & 1.5\%\\
+population & Age 25 - 44 & 1.5\%\\
+housing tenure & Owner Occupier No Mortgage & 1.5\%\\
+disabilty age group & Persons with a disability aged 0 - 14 & 1.5\%\\
+disabilty age group & Persons with a disability aged 25 - 44 & 1.4\%\\
 housing rooms & 1 Room & 1.4\%\\
-housing tenure & Owner Occupier No Mortgage & 1.4\%\\
+carers & Provides No Care & 1.3\%\\
+religion & Roman Catholic & 1.3\%\\
+general health & Good & 1.3\%\\
+population & Female & 1.3\%\\
+general health & Fair & 1.3\%\\
 disabilty age group & Total persons with a disability & 1.2\%\\
-housing rooms & 4 Rooms & 1.2\%\\
-population & Female & 1.2\%\\
-religion & Roman Catholic & 1.2\%\\
-population & Age 25 - 44 & 1.1\%\\
-carers & Provides No Care & 1.1\%\\
-housing tenure & Private Rented & 1.0\%\\
+general health & Bad & 1.2\%\\
+religion & Other Religion & 1.2\%\\
+disabilty age group & Persons with a disability aged 45 - 64 & 1.2\%\\
+carers & Total Care Providers & 1.2\%\\
+population & Age 15 - 24 & 1.1\%\\
+carers & 20-49 hours unpaid PW & 1.1\%\\
+housing tenure & Rented Free of Rent & 1.0\%\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-According to the analysis of the relative importance of socio-economic features (Table \ref{tab:census-features-table}), the most important socio-economic features are the proportion of large houses (i.e., houses with eight or more rooms) in the small area containing the property (29.0\%). It also appears that areas having a high proportion of young children (3.8\%), as well as the proportion of people reporting that they have no religion (5.0\%), influence the model.
+According to the analysis of the relative importance of socio-economic features (Table \ref{tab:census-features-table}), the most important socio-economic features are the proportion of large houses (i.e., houses with eight or more rooms) in the small area containing the property (28.2\%). It also appears that areas having a high proportion of young children (4.4\%), as well as the proportion of people reporting that they have no religion (4.5\%), influence the model.
 
 \hypertarget{discussion}{%
 \section{Discussion}\label{discussion}}
@@ -633,7 +644,7 @@ The evolution of housing prices is a pressing issue in most European capitals an
 \hypertarget{acknowledgement}{%
 \section{Acknowledgement}\label{acknowledgement}}
 
-The authors would like to thank the developers of the following R packages used to process, analyse, display and report data: R (Version 4.0.0; R Core Team 2020) and the R-packages \emph{dplyr} (Version 1.0.0; Wickham, François, et al. 2020), \emph{forcats} (Version 0.5.0; Wickham 2020), \emph{ggplot2} (Version 3.3.1; Wickham 2016), \emph{here} (Version 0.1; Müller 2017), \emph{kableExtra} (Version 1.1.0; Zhu 2019), \emph{latex2exp} (Version 0.4.0; Meschiari 2015), \emph{lubridate} (Version 1.7.8; Grolemund and Wickham 2011), \emph{lwgeom} (Version 0.2.4; Pebesma 2020), \emph{magrittr} (Version 1.5; Bache and Wickham 2014), \emph{mgcv} (Version 1.8.31; Wood 2011, 2004, 2003; Wood et al. 2016), \emph{nlme} (Version 3.1.147; Pinheiro et al. 2020), \emph{OpenStreetMap} (Version 0.3.4; Fellows and JMapViewer library by Jan Peter Stotz 2019), \emph{osmdata} (Version 0.1.3; Padgham et al. 2017), \emph{papaja} (Version 0.1.0.9942; Aust and Barth 2020), \emph{patchwork} (Version 1.0.0; Pedersen 2019), \emph{purrr} (Version 0.3.4; Henry and Wickham 2020), \emph{readr} (Version 1.3.1; Wickham, Hester, and Francois 2018), \emph{sf} (Version 0.9.3; Pebesma 2018), \emph{stringr} (Version 1.4.0; Wickham 2019), \emph{tibble} (Version 3.0.1; Müller and Wickham 2020), \emph{tidyr} (Version 1.1.0; Wickham and Henry 2020), \emph{tidyverse} (Version 1.3.0; Wickham, Averick, et al. 2019), \emph{tmap} (Version 3.0; Tennekes 2018), \emph{xgboost} (Version 1.0.0.2; Chen et al. 2020), and \emph{yardstick} (Version 0.0.6; Kuhn and Vaughan 2020).
+The authors would like to thank the developers of the following R packages used to process, analyse, display and report data: R (Version 4.0.2; R Core Team 2020) and the R-packages \emph{dplyr} (Version 1.0.1; Wickham, François, et al. 2020), \emph{forcats} (Version 0.5.0; Wickham 2020), \emph{ggplot2} (Version 3.3.2; Wickham 2016), \emph{here} (Version 0.1; Müller 2017), \emph{kableExtra} (Version 1.1.0; Zhu 2019), \emph{latex2exp} (Version 0.4.0; Meschiari 2015), \emph{lubridate} (Version 1.7.9; Grolemund and Wickham 2011), \emph{lwgeom} (Version 0.2.5; Pebesma 2020), \emph{magrittr} (Version 1.5; Bache and Wickham 2014), \emph{mgcv} (Version 1.8.31; Wood 2011, 2004, 2003; Wood et al. 2016), \emph{nlme} (Version 3.1.148; Pinheiro et al. 2020), \emph{OpenStreetMap} (Version 0.3.4; Fellows and JMapViewer library by Jan Peter Stotz 2019), \emph{osmdata} (Version 0.1.3; Padgham et al. 2017), \emph{papaja} (Version 0.1.0.9997; Aust and Barth 2020), \emph{patchwork} (Version 1.0.1; Pedersen 2019), \emph{purrr} (Version 0.3.4; Henry and Wickham 2020), \emph{readr} (Version 1.3.1; Wickham, Hester, and Francois 2018), \emph{sf} (Version 0.9.5; Pebesma 2018), \emph{stringr} (Version 1.4.0; Wickham 2019), \emph{tibble} (Version 3.0.3; Müller and Wickham 2020), \emph{tidyr} (Version 1.1.0; Wickham and Henry 2020), \emph{tidyverse} (Version 1.3.0; Wickham, Averick, et al. 2019), \emph{tmap} (Version 3.1; Tennekes 2018), \emph{xgboost} (Version 1.1.1.1; Chen et al. 2020), and \emph{yardstick} (Version 0.0.7; Kuhn and Vaughan 2020).
 
 \hypertarget{data-availability}{%
 \section{Data availability}\label{data-availability}}
@@ -645,6 +656,7 @@ The R code and relevant data for statistical computing are available at https://
 \addcontentsline{toc}{section}{References}
 
 \hypertarget{refs}{}
+\begin{cslreferences}
 \leavevmode\hypertarget{ref-antonakakis2016dynamic}{}%
 Antonakakis, Nikolaos, and Christos Floros. 2016. ``Dynamic Interdependencies Among the Housing Market, Stock Market, Policy Uncertainty and the Macroeconomy in the United Kingdom.'' \emph{International Review of Financial Analysis} 44: 111--22.
 
@@ -800,7 +812,7 @@ Wood, S. N., N., Pya, and B. S"afken. 2016. ``Smoothing Parameter and Model Sele
 
 \leavevmode\hypertarget{ref-R-kableExtra}{}%
 Zhu, Hao. 2019. \emph{KableExtra: Construct Complex Table with 'Kable' and Pipe Syntax}. \url{https://CRAN.R-project.org/package=kableExtra}.
+\end{cslreferences}
 
 \end{document}
-
 

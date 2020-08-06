@@ -46,6 +46,7 @@ knitr::opts_chunk$set(
   )
 
 # libraries --------------------------------------------------------------------
+library(rticles)
 library(tidyverse)
 library(magrittr)
 library(here)
@@ -346,7 +347,7 @@ test_tbl_x <- test_dublin_2018_features %>%
 xgmodel <- xgboost::xgboost(
   data = train_tbl_x,
   label = train_tbl_y,
-  objective = "reg:linear",
+  objective = "reg:squarederror",
   eval_metric = "rmse",
   verbose = 0,
   nround = 100
@@ -362,7 +363,7 @@ metrics_result <- result %>%
   mutate(.estimate = round(.estimate, 2))
 
 lm_result <- lm(pred ~ price, result) %>%
-  papaja::apa_print.lm()
+  papaja::apa_print()
 ```
 
 Using the XGBoost algorithm, the 160 urban features are explaining `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
@@ -487,7 +488,7 @@ test_tbl_x <- test_dublin_2018_features %>%
 xgmodel <- xgboost::xgboost(
   data = train_tbl_x,
   label = train_tbl_y,
-  objective = "reg:linear",
+  objective = "reg:squarederror",
   eval_metric = "rmse",
   verbose = 0,
   nround = 100
@@ -503,7 +504,7 @@ metrics_result <- result %>%
   mutate(.estimate = round(.estimate, 2))
 
 lm_result <- lm(pred ~ price, result) %>%
-  papaja::apa_print.lm()
+  papaja::apa_print()
 ```
 
 Using the XGBoost algorithm, the 48 socio-economic features explain `r scales::percent(metrics_result$.estimate[metrics_result$.metric == "rsq"])` of the property price variance (`r lm_result$statistic$modelfit$r2`) with a $RMSE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "rmse"], suffix = "", prefix = "€")` and a $MAE$ of `r scales::dollar(metrics_result$.estimate[metrics_result$.metric == "mae"], suffix = "", prefix = "€")`.
