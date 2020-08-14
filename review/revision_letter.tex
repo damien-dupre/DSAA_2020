@@ -1,0 +1,212 @@
+% Taken from https://github.com/mschroen/review_response_letter
+% GNU General Public License v3.0
+
+\documentclass[]{article}
+
+\usepackage[includeheadfoot,top=20mm, bottom=20mm, footskip=2.5cm]{geometry}
+
+% Typography
+\usepackage[T1]{fontenc}
+\usepackage{times}
+%\usepackage{mathptmx} % math also in times font
+\usepackage{amssymb,amsmath}
+\usepackage{microtype}
+\usepackage[utf8]{inputenc}
+
+% Misc
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref} %textopdfstring from pandoc
+\usepackage{soul} % Highlight using \hl{}
+
+% Table
+
+\usepackage{adjustbox} % center large tables across textwidth by surrounding tabular with \begin{adjustbox}{center}
+\renewcommand{\arraystretch}{1.5} % enlarge spacing between rows
+\usepackage{caption}
+\captionsetup[table]{skip=10pt} % enlarge spacing between caption and table
+
+% Section styles
+
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\large}{\makebox[0pt][r]{\bf \thesection.\hspace{4mm}}}{0em}{\bfseries}
+\titleformat{\subsection}{\normalfont}{\makebox[0pt][r]{\bf \thesubsection.\hspace{4mm}}}{0em}{\bfseries}
+\titlespacing{\subsection}{0em}{1em}{-0.3em} % left before after
+
+% Paragraph styles
+
+\setlength{\parskip}{0.6\baselineskip}%
+\setlength{\parindent}{0pt}%
+
+% Quotation styles
+
+\usepackage{framed}
+\let\oldquote=\quote
+\let\endoldquote=\endquote
+\renewenvironment{quote}{\begin{fquote}\advance\leftmargini -2.4em\begin{oldquote}}{\end{oldquote}\end{fquote}}
+
+% \usepackage{xcolor}
+\newenvironment{fquote}
+  {\def\FrameCommand{
+	\fboxsep=0.6em % box to text padding
+	\fcolorbox{black}{white}}%
+	% the "2" can be changed to make the box smaller
+    \MakeFramed {\advance\hsize-2\width \FrameRestore}
+    \begin{minipage}{\linewidth}
+  }
+  {\end{minipage}\endMakeFramed}
+
+% Table styles
+
+\let\oldtabular=\tabular
+\let\endoldtabular=\endtabular
+\renewenvironment{tabular}[1]{\begin{adjustbox}{center}\begin{oldtabular}{#1}}{\end{oldtabular}\end{adjustbox}}
+
+
+% Shortcuts
+
+%% Let textbf be both, bold and italic
+%\DeclareTextFontCommand{\textbf}{\bfseries\em}
+
+%% Add RC and AR to the left of a paragraph
+%\def\RC{\makebox[0pt][r]{\bf RC:\hspace{4mm}}}
+%\def\AR{\makebox[0pt][r]{AR:\hspace{4mm}}}
+
+%% Define that \RC and \AR should start and format the whole paragraph
+\usepackage{suffix}
+\long\def\RC#1\par{\makebox[0pt][r]{\bf RC:\hspace{4mm}}{\bf #1}\par\makebox[0pt][r]{AR:\hspace{10pt}}} %\RC
+\WithSuffix\long\def\RC*#1\par{{\bf #1}\par} %\RC*
+% \long\def\AR#1\par{\makebox[0pt][r]{AR:\hspace{10pt}}#1\par} %\AR
+\WithSuffix\long\def\AR*#1\par{#1\par} %\AR*
+
+
+%%%
+%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF
+%DIF UNDERLINE PREAMBLE %DIF PREAMBLE
+\RequirePackage[normalem]{ulem} %DIF PREAMBLE
+\RequirePackage{color} %DIF PREAMBLE
+\definecolor{offred}{rgb}{0.867, 0.153, 0.153} %DIF PREAMBLE
+\definecolor{offblue}{rgb}{0.0705882352941176, 0.168627450980392, 0.717647058823529} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{{\protect\color{offred}\sout{#1}}} %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{{\protect\color{offblue}\uwave{#1}}} %DIF PREAMBLE
+%DIF SAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddbegin}{} %DIF PREAMBLE
+\providecommand{\DIFaddend}{} %DIF PREAMBLE
+\providecommand{\DIFdelbegin}{} %DIF PREAMBLE
+\providecommand{\DIFdelend}{} %DIF PREAMBLE
+%DIF FLOATSAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}} %DIF PREAMBLE
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}} %DIF PREAMBLE
+\providecommand{\DIFaddbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFaddendFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelendFL}{} %DIF PREAMBLE
+%DIF END PREAMBLE EXTENSION ADDED BY LATEXDIFF
+
+% Fix pandoc related tight-list error
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Add task difficulty and assignment commands from https://github.com/cdc08x/letter-2-reviewers-LaTeX-template
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{ifdraft}
+
+\newcommand{\TaskEstimationBox}[2]{%
+\ifoptiondraft{\parbox{1.0\linewidth}{\hfill \hfill {\colorbox{#2}{\color{White} \textbf{#1}}}}}%
+{}%
+}
+%
+\def\WorkInProgress {\TaskEstimationBox{Work in progress}{Cyan}}
+\def\AlmostDone {\TaskEstimationBox{Almost there}{NavyBlue}}
+\def\Done {\TaskEstimationBox{Done}{Blue}}
+%
+\def\NotEstimated {\TaskEstimationBox{Effort not estimated}{Gray}}
+\def\Easy {\TaskEstimationBox{Feasible}{ForestGreen}}
+\def\Medium {\TaskEstimationBox{Medium effort}{Orange}}
+\def\TimeConsuming {\TaskEstimationBox{Time-consuming}{Bittersweet}}
+\def\Hard {\TaskEstimationBox{Infeasible}{Black}}
+%
+\newcommand{\Assignment}[1]{
+%
+\ifoptiondraft{%
+\vspace{.25\baselineskip} \parbox{1.0\linewidth}{\hfill \hfill \vspace{.25\baselineskip} \normalfont{Assignment:} \normalfont{\textbf{#1}}}%
+}{}%
+}
+
+
+
+
+
+\begin{document}
+
+{\Large\bf Author response to reviews of}\\[1em]
+Manuscript Paper 147\\ \\
+{\Large Urban and socio-economic correlates of property price evolution: Application to Dublin's costal area}\\[1em]
+
+{submitted to \it Special Session-Environmental and Geo-spatial Data Analytics (EnGeoData) of the 7th IEEE International Conference on Data Science and Advanced Analytics (DSAA'2020). }\\
+\hrule
+
+\hfill {\bfseries RC:} \textbf{\textit{Reviewer Comment}}\(\quad\) AR: Author Response \(\quad\square\) Manuscript text
+
+\vspace{2em}
+
+Dear Antonio, David, Mathieu and Maguelonne,
+
+Thank you to consider the manuscript entitled ``Urban and socio-economic correlates of property price evolution: Application to Dublin's costal area'' in EnGeoData 2020. We would also like to take this opportunity to express our thanks to the reviewers for the positive feedback and helpful comments for correction or modification.
+
+We believe have resulted in an improved revised manuscript, which you will find uploaded alongside this document. The manuscript has been revised to address the reviewer comments, which are appended alongside our responses to this letter.
+
+\hypertarget{reviewer-1}{%
+\section{Reviewer \#1}\label{reviewer-1}}
+
+\RC{Page 1 : « 10389 houses » in the Abstract and « 10395 properties » in the Method section and « 10387 Properties » in Discussion section ?}
+
+\RC{Page 2 : « an eXtreme Gradient Boosting (XGBoost) regression model was calculated to examine the extent to which house prices rely on urban and on socio-economic features ». Could you explain wether you worked on the XGBoost algorithm or not ? What was your contribution to develop/adapt/or parameterize this algorithm ?}
+
+\RC{I suppose that Urban features importance is computed by the XGBoost model (Table I). Could you explain this stage and comment results ? Embassy importance is detected thanks to statistical computations. Is it possible to comment and validate it by qualitative interviews with experts ?}
+
+\RC{Page 4 : Similarly, I couldn’t understand how Socio-Economic features importance is computed (Table II). Could you explain this stage and comment results ? Religion importance is detected thanks to statistical computations. Is it possible to comment and validate it by qualitative interviews with experts ?}
+
+\RC{« Embassies are in general located in the most expensive areas of cities ». Are the ambassies installed in expensive areas or are the areas expensive because of their embassies ?}
+
+\textbackslash RC\{Globally, it is difficult to evaluate the added-value of this research work :
+
+\begin{itemize}
+\tightlist
+\item
+  Is it a proposal of a new regression model ? If yes, you should better explain XGBoost and its originality
+\item
+  Is it a experiment of an existing regression model applied to housing prices ? If yes, you should comment the results on the 20\% of the original dataset : are the price predictions relevant ? Is this approach better than existing ones for price prediction ? Number of parameters ? Computation speed ? etc.\}
+\end{itemize}
+
+\RC{What was not possible before and what is possible now thanks to this work ?}
+
+\RC{Typos : Page 1 : « 10395 property »}
+
+\hypertarget{reviewer-2}{%
+\section{Reviewer \#2}\label{reviewer-2}}
+
+\RC{This paper presents machine learning experiments to estimate price changes in the real estate market. 
+
+The main method is the XGBoost algorithm. Perhaps more methods could have been tried, including some simple baseline to put the presented results into perspective.
+
+The focus of the paper in on the contribution of the proposed features. 
+
+There in not much novelty, but the experiments are well executed and the results are convincing. Real data is used for training and testing.}
+
+\hypertarget{reviewer-3}{%
+\section{Reviewer \#3}\label{reviewer-3}}
+
+\RC{The topic of the paper fits well with the special session main topics. Below some suggestions of improvement that can be made to this contribution.}
+
+\RC{Concerning the following statement: “techniques used usually include artificial neural networks due to the volatility of the market”, even though it is backed up by bibliographic references, it would be worth further explaining it. The same applies to the following statement "While these methods are efficient in a non-restricted space, they have limitations when they are used in coastal areas.", explain why.}
+
+\RC{There are some issues related to the data acquisition process and the possible presence of errors. You noted that errors may occur when the data is being filed, could you provide some calculated information about the quality of the data used based on missing values, incoherent values, etc. Also, property addresses were geocoded relying on OSM geocoder, can you estimate accuracy of the process? The quality of OSM data is usually weak, what are the sources reported on the OSM urban features you extracted (source key: https://wiki.openstreetmap.org/wiki/Key:source)?}
+
+\RC{Input data is not available in the github repository given by the authors, can we suppose it is due to restrictions to share the data, if so, this should be said clearly.}
+
+\RC{Add URL to point to the Central Statistics Office and All-Island Research Observatory where data is available.}
+
+\RC{explicit acronym "SD".}
+
+
+\end{document}\grid

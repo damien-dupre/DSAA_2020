@@ -16,7 +16,7 @@ keywords: ["Property price", "Housing Market", "Feature Analysis", "Machine Lear
 abstract: |
   Understanding the characteristics of the housing market is essential for both sellers and buyers. However, the housing market is influenced by multiple factors. In this paper, the urban and socio-economic structure of an area is used to predict the price of 10389 houses sold in 2018 in the city of Dublin. More precisely, the direct distance from each house to 160 urban features taken from OpenStreetMap is calculated, and an extreme gradient boosting linear regression performed. Using these features, the model explains 47\% of the housing price variance. The most important features in this model are the proximity to an embassy and to a grassland. In addition, the results of a population census from 2016 are also used to correlate with the price of houses. From this census, 48 features are used as the input of a gradient boost linear regression model. In all, the socio-economic features are explaining 42\% of the housing price variance as well. The most important socio-economic features are; the density of houses having more than eight or more rooms in the area, the density of young children, and the density of individuals reporting that they have no religion. By taking into account either urban or socio-economic features, it is possible to accurately estimate housing prices and to predict their evolution.
 
-bibliography: [references.bib, r-references.bib]
+bibliography: ["bib/references.bib", "bib/r-references.bib"]
 output:
   bookdown::pdf_book:
     base_format: rticles::ieee_article
@@ -70,6 +70,7 @@ library(xgboost)
 # functions --------------------------------------------------------------------
 source(here::here("script/functions_project.R"))
 source(here::here("script/osm_dublin_features.R"))
+
 # data path --------------------------------------------------------------------
 data_path <- here::here() %>% 
   dirname() %>% 
