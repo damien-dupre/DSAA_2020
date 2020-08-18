@@ -317,7 +317,7 @@
 \usepackage[unicode=true]{hyperref}
 
 \hypersetup{
-            pdftitle={Urban and socio-economic correlates of property price in Dublin's area},
+            pdftitle={Urban and socio-economic correlates of property prices in Dublin's area},
             pdfkeywords={Property price, Housing Market, Feature Analysis, Machine Learning, Geocoding},
             pdfborder={0 0 0},
             breaklinks=true}
@@ -369,7 +369,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{Urban and socio-economic correlates of property price in Dublin's area}
+\title{Urban and socio-economic correlates of property prices in Dublin's area}
 
 % author names and affiliations
 % use a multiple column layout for up to three different
@@ -495,8 +495,7 @@ In this paper, an alternative machine learning algorithm is used to identify urb
 \section{Method}\label{method}}
 
 Since 2010, under the Irish Property Services (Regulation) Act, all individuals acquiring a property in Ireland have to declare it to Property Services Regulatory Authority (PSRA). They must provide details such as the date of sale, the price and the address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes (Property Services Regulatory Authority 2020). Data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser, and it must be noted that errors may occur when the data is being filed.
-
-Because of the evolution of urban planning and the evolution of socio-economic features measured by the 2016 census, only properties sold in 2018 were processed to avoid potential temporal incoherence. The total amount of property sold in 2018 in the county Dublin which appears in the Property Price Register is 18665. From these, all property corresponding to apartments were removed (10.3\% of the original dataset). Finally, unsuccessfully geocoded properties were also removed from the original dataset (38.0\%) to obtain the 10389 of the final dataset used to identify the urban and socio-economic correlates of property prices.
+Because of the evolution of urban planning and the evolution of socio-economic features measured by the 2016 census, only properties sold in 2018 were processed to avoid potential temporal incoherence. The total amount of property sold in 2018 in the county Dublin which appears in the Property Price Register is 18665. From these, all property corresponding to apartments were removed (10.3\% of the original dataset). Finally, unsuccessfully geocoded properties were also removed from the original dataset (38.0\%) to obtain the 10387 of the final dataset used to identify the urban and socio-economic correlates of property prices.
 
 In order to evaluate the spacial distribution of the property sold, property addresses were geocoded (i.e., converted to latitude and longitude) using the Nominatim API (Hoffmann 2020) to OpenStreetMap data. OpenStreetMap is a collaborative project which aims to create and provide access to free editable maps of the world (Haklay and Weber 2008).
 
@@ -524,7 +523,7 @@ Both tree and linear regression based boosting model are used for every of the c
 \hypertarget{results}{%
 \section{Results}\label{results}}
 
-In 2018, the average price of a sold property in Dublin was €384,892 with a standard deviation of €175,476. In order to remove potential human errors and outliers, prices higher or lower than 1 SD were removed from the original dataset.
+In 2018, the average price of a sold property in Dublin was €394,093 with a standard deviation of €170,219 (Figure \ref{fig:distrib-plot}).
 
 \begin{figure}[!h]
 \includegraphics[width=0.98\columnwidth]{manuscript_files/figure-latex/distrib-plot-1} \caption{Overall distribution of the property prices density in the city of Dublin in 2018}\label{fig:distrib-plot}
@@ -534,7 +533,7 @@ In 2018, the average price of a sold property in Dublin was €384,892 with a st
 \includegraphics[width=0.98\columnwidth]{manuscript_files/figure-latex/distrib-gps-1} \caption{Geographic distribution of the property prices density in the city of Dublin in 2018 using a generalized additive model with soap film smooth parameter to take into account the influence of coastal boundaries. Estimates outside of the 95\% Confidence Interval were removed.}\label{fig:distrib-gps}
 \end{figure}
 
-The density of housing prices reveals a unimodal distribution of property prices (Figure \ref{fig:distrib-plot}). In addition, the geographical distribution of property prices indicates a higher valuation in the South-West of the city as well as on the coast line (Figure \ref{fig:distrib-gps}).
+The density of housing prices reveals a unimodal distribution of property prices. In addition, the geographical distribution of property prices indicates a higher valuation in the South-West of the city as well as on the coast line (Figure \ref{fig:distrib-gps}).
 
 \hypertarget{correlates-with-urban-features}{%
 \subsection{Correlates with urban features}\label{correlates-with-urban-features}}
@@ -571,7 +570,7 @@ Objective & $RMSE$ & $R^2$ & $MAE$\\
 
 The model comparison reveals that tree based boosting models are more accurate than linear regression based model. In addition, within the possible objectives of the tree based boosting models, the tweedie regression with log-link appears to obtain the highest \(R^2\) value as well as the lowest \(RMSE\) and \(MAE\) prediction errors.
 
-Using the XGBoost algorithm with a tree based booster and a tweedie regression with log-link learning objective, the 160 urban features are explaining 45\% of the property price variance (\(F(1, 2076) = 1,690.80\), \(p < .001\)) with a \(RMSE\) of €126,626 and a \(MAE\) of €85,073.07.
+Using the XGBoost algorithm with a tree based booster and a tweedie regression with log-link learning objective, the 160 urban features are explaining 44.9\% of the property price variance (\(F(1, 2076) = 1,690.80\), \(p < .001\)) with a \(RMSE\) of €126,626 and a \(MAE\) of €85,073.
 
 The overall correlation of the predicted property prices with urban features is shown in Figure \ref{fig:osm-features-xgb}A. It can be noticed that property prices situated at the low and the high end of the range are the most difficult to predict (Figure \ref{fig:osm-features-xgb}B). A possible explanation is the absence of distinctive and recurrent patterns in urban features for these properties. However, the prices higher than €300,000 are potentially driving down the prediction accuracy due to outliers.
 
@@ -586,7 +585,7 @@ By analysing their importance (Table \ref{tab:osm-features-table}), the most rel
 \caption{\label{tab:osm-features-table}Top 10 most important urban features contributing to the property price prediction.}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
+\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright\arraybackslash}p{10em}>{\raggedright}X}
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
@@ -626,10 +625,10 @@ Objective & $RMSE$ & $R^2$ & $MAE$\\
 \hspace{1em}tweedie & €130,927 & 0.42 & €86,707\\
 \addlinespace[0.3em]
 \multicolumn{4}{l}{\textbf{Linear regression based}}\\
-\hspace{1em}squarederror & €146,781 & 0.26 & €107,890\\
-\hspace{1em}squaredlogerror & €406,108 & 0.01 & €368,877\\
-\hspace{1em}gamma & €182,432 & 0.08 & €136,441\\
-\hspace{1em}tweedie & €164,439 & 0.13 & €122,259\\
+\hspace{1em}squarederror & €146,985 & 0.25 & €108,141\\
+\hspace{1em}squaredlogerror & €406,180 & 0.01 & €368,972\\
+\hspace{1em}gamma & €171,736 & 0.11 & €128,489\\
+\hspace{1em}tweedie & €174,236 & 0.10 & €130,269\\
 \bottomrule
 \multicolumn{4}{l}{\textit{Note: }}\\
 \multicolumn{4}{l}{Missing value ares due to incompatibilities between data and methods.}\\
@@ -642,7 +641,7 @@ The comparison of accuracy metrics reveals that tree based boosting models obtai
 \includegraphics[width=0.98\columnwidth]{manuscript_files/figure-latex/census-features-xgb-1} \caption{Property price prediction accuracy (A) and prediction error (B) using socio-economic features with XGBoost.}\label{fig:census-features-xgb}
 \end{figure}
 
-Using the XGBoost algorithm with a tree based booster and a gamma regression with log-link learning objective, the 48 socio-economic features explain 43\% of the property price variance (\(F(1, 2076) = 1,554.37\), \(p < .001\)) with a \(RMSE\) of €129,221 and a \(MAE\) of €86,949.15.
+Using the XGBoost algorithm with a tree based booster and a gamma regression with log-link learning objective, the 48 socio-economic features explain 42.8\% of the property price variance (\(F(1, 2076) = 1,554.37\), \(p < .001\)) with a \(RMSE\) of €129,221 and a \(MAE\) of €86,949.
 
 The overall correlation of the predicted property prices with socio-economic features is shown in Figure \ref{fig:census-features-xgb}A. Similar to the model used for urban features, the model based on socio-economic features reveals that prices lower than €300,000 lead to the highest errors in over-valuation while prices higher than €300,000 lead to systematic under-valuation errors (Figure \ref{fig:census-features-xgb}B).
 
@@ -653,7 +652,7 @@ According to the analysis of the relative importance of socio-economic features 
 \caption{\label{tab:census-features-table}Top 10 most important socio-economic features contributing to the property price prediction.}
 \centering
 \fontsize{8}{10}\selectfont
-\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright}X>{\raggedright}X}
+\begin{tabu} to \linewidth {>{\raggedright}X>{\raggedright\arraybackslash}p{10em}>{\raggedright}X}
 \toprule
 Feature Category & Feature Type & Importance\\
 \midrule
