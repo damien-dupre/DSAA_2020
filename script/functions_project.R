@@ -1,7 +1,32 @@
+################################################################################
+geocode_batch <- function(address){
+  # for osm geocoding ----------------------------------------------------------
+  res <-
+    jsonlite::fromJSON(
+      gsub(
+        "\\@addr\\@",
+        gsub("\\s+", "\\%20", address),
+        'http://nominatim.openstreetmap.org/search/@addr@?format=json&addressdetails=0&limit=1'
+      )
+    )
+  # for pickpoint geocoding ----------------------------------------------------
+  # res <- 
+  #   prettymapr::geocode(
+  #     location = address, 
+  #     source = "pickpoint", 
+  #     key = config::get("pickpoint")$key
+  #   )
+  if (length(res) > 0) {
+    dplyr::select(res, display_name, lat, lon)
+  } else {
+    data.frame(display_name = NA, lat = NA, lon = NA)
+  }
+}
+
+################################################################################
 gam_density <- function (x, view = NULL, cond = list(), n.grid = 40, too.far = 0, 
                     col = NA, color = "heat", contour.col = NULL, se = -1, type = "link", 
-                    plot.type = "persp", zlim = NULL, nCol = 50, ...) 
-{
+                    plot.type = "persp", zlim = NULL, nCol = 50, ...) {
   fac.seq <- function(fac, n.grid) {
     fn <- length(levels(fac))
     gn <- n.grid
@@ -124,18 +149,97 @@ gam_density <- function (x, view = NULL, cond = list(), n.grid = 40, too.far = 0
   dat <- as.data.frame(z)
   rownames(dat) <- m1
   colnames(dat) <- m2
-  
   dat %>%
     tibble::rownames_to_column("lng") %>%
-    tidyr::gather(lat,value, -lng) %>%
-    dplyr::mutate(lng = as.numeric(lng)) %>%
-    dplyr::mutate(lat = as.numeric(lat))
+    tidyr::gather(lat, value, -lng) %>%
+    dplyr::mutate(
+      lng = as.numeric(lng),
+      lat = as.numeric(lat)
+    )
 }
-
+################################################################################
 read_join <- function(file_name){
   file.path(data_path, "aero_data", file_name) %>% 
     readr::read_csv(col_types = list(GEOG_ID = col_character())) %>% 
     dplyr::filter(GEOG_ID %in% list_geogid)
 }
-
+################################################################################
+xgboost_all_parameters <- function(booster_parameter, objective_parameter){
+  if (booster_parameter == "gbtree") {
+    xgboost::xgboost(
+# https://xgboost.readthedocs.io/en/latest/parameter.html ----------------------
+      data = train_tbl_x,
+      label = train_tbl_y,
+# Parameters for Tree Booster --------------------------------------------------
+      booster = booster_parameter,
+      learning_rate = 0.3,
+      min_split_loss = 0,
+      max_depth = 6,
+      min_child_weight = 1,
+      max_delta_step = 0,
+      subsample = 1,
+      sampling_method = "uniform",
+      colsample_bytree = 1,
+      colsample_bylevel = 1,
+      colsample_bynode = 1,
+      reg_lambda = 1,
+      reg_alpha = 0,
+      tree_method = "auto", # Choices: auto, exact, approx, hist, gpu_hist
+      #scale_pos_weight = 1,
+      refresh_leaf = 1,
+      process_type = "default", # Choices: default, update
+      grow_policy = "depthwise", # Choices: depthwise, lossguide
+      max_leaves = 0,
+# Learning Task Parameters -----------------------------------------------------
+      objective = objective_parameter, 
+      # Choices (reg only): squarederror, squaredlogerror, gamma, tweedie
+      eval_metric = "rmse",
+      # Choices: rmse, rmsle, mae, mphe, logloss, error, error@t, merror, ...
+      base_score = 0.5,
+      verbose = 0,
+      nround = 100
+    ) %>% 
+      predict(test_tbl_x) %>% 
+      tibble::enframe(name = NULL, value = "pred") %>% 
+      dplyr::mutate(price = as.data.frame(test_tbl_y)$price) %>% 
+      yardstick::metrics(truth = price, estimate = pred) %>% 
+      select(-.estimator) %>% 
+      mutate(
+        .estimate = round(.estimate, 2),
+        booster = booster_parameter,
+        objective = objective_parameter
+      )
+  } else if (booster_parameter == "gblinear") {
+    xgboost::xgboost(
+# https://xgboost.readthedocs.io/en/latest/parameter.html ----------------------
+      data = train_tbl_x,
+      label = train_tbl_y,
+# Parameters for Linear Booster ------------------------------------------------
+      booster = "gblinear",
+      reg_lambda = 0,
+      reg_alpha = 0,
+      updater = "shotgun", # Choices: shotgun, coord_descent
+      feature_selector = "cyclic", # Choices: cyclic, shuffle
+# Learning Task Parameters -----------------------------------------------------
+      objective = objective_parameter, 
+      # Choices (reg only): squarederror, squaredlogerror, gamma, tweedie
+      eval_metric = "rmse",
+      # Choices: rmse, rmsle, mae, mphe, logloss, error, error@t, merror, ...
+      base_score = 0.5,
+      verbose = 0,
+      nround = 100
+    ) %>% 
+      predict(test_tbl_x) %>% 
+      tibble::enframe(name = NULL, value = "pred") %>% 
+      dplyr::mutate(price = as.data.frame(test_tbl_y)$price) %>% 
+      yardstick::metrics(truth = price, estimate = pred) %>% 
+      select(-.estimator) %>% 
+      mutate(
+        .estimate = round(.estimate, 2),
+        booster = booster_parameter,
+        objective = objective_parameter
+      )
+  } else next
+  
+}
 
