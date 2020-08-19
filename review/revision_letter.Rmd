@@ -17,7 +17,6 @@ options(scipen = 999)
 set.seed(999)
 knitr::opts_chunk$set(
   cache.extra = knitr::rand_seed,
-  cache = TRUE, 
   message = FALSE, 
   warning = FALSE, 
   error = FALSE, 
@@ -55,14 +54,14 @@ The figures have been corrected with the appropriate number of observation in ou
 
 No modifications of the current version of the XGBoost R-package algorithm has been applied to obtain our results. The hyperparameters are all defaults as precised in the manuscript:
 
-> As no specific weight or bias in the models has been hypothesized, the parameters of the XGBoost function have been set to the default value.
+> As no specific weight or bias in the models have been hypothesized, parameters of the XGBoost algorithms have been kept as default values.
 
 \RC{I suppose that Urban features importance is computed by the XGBoost model (Table I). Could you explain this stage and comment results ? Embassy importance is detected thanks to statistical computations. Is it possible to comment and validate it by qualitative interviews with experts ?
 Page 4 : Similarly, I couldn’t understand how Socio-Economic features importance is computed (Table II). Could you explain this stage and comment results ? Religion importance is detected thanks to statistical computations. Is it possible to comment and validate it by qualitative interviews with experts ?}
 
 Indeed the importance is obtained from the XGBoost model. It is a measure of the improvement in accuracy brought by a feature based on its coefficient's absolute magnitude. Compared to the other features included, the importance a specific feature corresponds to the proportion of its contribution to the overall accuracy of the model. This information as been added to the "eXtreme Gradient Boosting" section as follow:
 
-> Then, the most accurate model is used to identify the features that are contributing the most to the prediction of property prices. This importance is a measure of the improvement in accuracy brought by a feature based on its coefficient's absolute magnitude.
+> Next, the most accurate model is used to identify the features that are contributing most to the prediction of property prices. This contribution (also called "importance") is a measure of the improvement in accuracy brought by a feature. It is based on the absolute magnitude of feature's coefficient.
 
 Our explanations on the importance of certain features to the model are interpretative and, therefore, we would like to keep these interpretations in the discussion section. We agree that it would be easier for the reader to find them right after each result section, however, we think that it is important to keep separated objective results and subjective interpretations.
 
@@ -72,7 +71,7 @@ The idea of qualitative interviews is very interesting. However, we would like t
 
 The question of correlation vs. causation is highly relevant. Because linear models are based on correlations, we want to avoid any interpretation related to causation. As a consequence, the following sentence has been added to the document discussion:
 
-> In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, features' importance can be either the cause or the consequence of property prices in a neighborhood. 
+> In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, a feature's importance can be either the cause or the consequence of property prices in a neighborhood. 
 
 \RC{Globally, it is difficult to evaluate the added-value of this research work :
 
@@ -84,7 +83,7 @@ What was not possible before and what is possible now thanks to this work ?}
   
 As indicated in the title, the added value of the paper is about identifying urban and socio-economic correlates of property price evolution. These correlated are obtained on the results of the test dataset. The price predictions is relevant to real estate agents in charge of property valuations and to buyers to approximate the real value of a property. This added value has been added in the conclusion as follow:
 
-> These results allow an understanding of why some areas have higher prices than others which is a relevant information not only for real estate agents in charge of property valuations but also to buyers in order to approximate the real value of a property.
+> These results allow an understanding of why some areas have higher prices than others which is relevant information not only for real estate agents in charge of property valuations but also for buyers in order to estimate the real value of a property.
 
 \RC{Typos : Page 1 : « 10395 property »}
 
@@ -112,27 +111,30 @@ We thank you for your thoughtful and thorough review and we believe your input h
 
 A precision on the use of artificial neural networks techniques has been added to the manuscript as follow:
 
-> Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions [@aragones2007neural]. However, the model obtained from most artificial neural networks are hardly interpretable [@rudin2019stop].
+> Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions [@aragones2007neural]. However, the model obtained from most artificial neural networks are difficult to interpret [@rudin2019stop].
 
 The limitation of classic models applied to coastal areas is presented as follow:
 
-> This problem is known as "finite area smoothing" and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which would lead to poorly predicted values [@ramsay2002spline]. 
+> This problem is known as "finite area smoothing" and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which can lead to poorly predicted values [@ramsay2002spline]. 
 
 \RC{There are some issues related to the data acquisition process and the possible presence of errors. You noted that errors may occur when the data is being filed, could you provide some calculated information about the quality of the data used based on missing values, incoherent values, etc. Also, property addresses were geocoded relying on OSM geocoder, can you estimate accuracy of the process? The quality of OSM data is usually weak, what are the sources reported on the OSM urban features you extracted (source key: https://wiki.openstreetmap.org/wiki/Key:source)?}
 
 ```{r}
-geocode_dublin_2018 <- here::here("data/ppr_dublin_2018.csv") %>% 
-  readr::read_csv()
+n_raw <- here::here("data/ppr_dublin_2018.csv") %>% 
+  readr::read_csv() %>% 
+  nrow()
 
-house_dublin_2018 <- geocode_dublin_2018 %>% 
-  janitor::clean_names() %>% 
-  dplyr::filter(!grepl('apartment|Apartment|APART|APT|Apt', address))
+n_house <- here::here("data/ppr_dublin_2018.csv") %>% 
+  readr::read_csv() %>% 
+  dplyr::filter(!grepl('apartment|Apartment|APART|APT|Apt', Address)) %>% 
+  nrow()
 
-final_dublin_2018 <- here::here("data/data_dublin_2018_osm_features.rds") %>% 
-  readr::read_rds()
+n_final <- here::here("data/data_dublin_2018_features.rds") %>% 
+  readr::read_rds() %>% 
+  nrow()
 ```
 
-The total amount of property sold in 2018 in the county Dublin which appears in the Property Price Register is `r nrow(geocode_dublin_2018)`. From these, all property corresponding to apartments were removed (`r scales::percent(1-(nrow(house_dublin_2018)/nrow(geocode_dublin_2018)), accuracy = 0.1)` of the original dataset). Finally, unsuccessfully geocoded properties were also removed from the original dataset (`r scales::percent(1-(nrow(final_dublin_2018)/nrow(house_dublin_2018)), accuracy = 0.1)`) to obtain the `r nrow(final_dublin_2018)` of the final dataset used to identify the urban and socio-economic correlates of property prices.
+In 2018, the Property Price Register references `r n_raw` properties sold in Dublin's area. Among these properties, those corresponding to apartments have been removed from the original dataset in order to evaluate only houses (`r scales::percent(1-(n_house/n_raw), accuracy = 0.1)` of the properties). Finally, some properties have been unsuccessfully geocoded because of mistakes on their address or because they have not been found (`r scales::percent(1-(n_final/n_house), accuracy = 0.1)` of the properties). These properties have also been removed from the original dataset to obtain a final dataset of `r n_final` properties.
 
 These information have been added as it in the new version of the manuscript.
 
@@ -146,7 +148,7 @@ The github repository has been update to ensure the full reproducibility of the 
 
 the URLs for the Central Statistics Office and the All-Island Research Observatory have been added to the manuscript.
 
-> The results of Irish 2016 census consultation is accessible through both the Central Statistics Office [@cso2020] and All-Island Research Observatory [@airo2020].
+> The results of Irish 2016 census consultation is accessible through both the Central Statistics Office [@cso2020] and the All-Island Research Observatory [@airo2020] websites.
 
 \RC{explicit acronym "SD".}
 

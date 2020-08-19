@@ -181,7 +181,7 @@ The figures have been corrected with the appropriate number of observation in ou
 No modifications of the current version of the XGBoost R-package algorithm has been applied to obtain our results. The hyperparameters are all defaults as precised in the manuscript:
 
 \begin{quote}
-As no specific weight or bias in the models has been hypothesized, the parameters of the XGBoost function have been set to the default value.
+As no specific weight or bias in the models have been hypothesized, parameters of the XGBoost algorithms have been kept as default values.
 \end{quote}
 
 \RC{I suppose that Urban features importance is computed by the XGBoost model (Table I). Could you explain this stage and comment results ? Embassy importance is detected thanks to statistical computations. Is it possible to comment and validate it by qualitative interviews with experts ?
@@ -190,7 +190,7 @@ Page 4 : Similarly, I couldn’t understand how Socio-Economic features importan
 Indeed the importance is obtained from the XGBoost model. It is a measure of the improvement in accuracy brought by a feature based on its coefficient's absolute magnitude. Compared to the other features included, the importance a specific feature corresponds to the proportion of its contribution to the overall accuracy of the model. This information as been added to the ``eXtreme Gradient Boosting'' section as follow:
 
 \begin{quote}
-Then, the most accurate model is used to identify the features that are contributing the most to the prediction of property prices. This importance is a measure of the improvement in accuracy brought by a feature based on its coefficient's absolute magnitude.
+Next, the most accurate model is used to identify the features that are contributing most to the prediction of property prices. This contribution (also called ``importance'') is a measure of the improvement in accuracy brought by a feature. It is based on the absolute magnitude of feature's coefficient.
 \end{quote}
 
 Our explanations on the importance of certain features to the model are interpretative and, therefore, we would like to keep these interpretations in the discussion section. We agree that it would be easier for the reader to find them right after each result section, however, we think that it is important to keep separated objective results and subjective interpretations.
@@ -202,7 +202,7 @@ The idea of qualitative interviews is very interesting. However, we would like t
 The question of correlation vs.~causation is highly relevant. Because linear models are based on correlations, we want to avoid any interpretation related to causation. As a consequence, the following sentence has been added to the document discussion:
 
 \begin{quote}
-In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, features' importance can be either the cause or the consequence of property prices in a neighborhood.
+In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, a feature's importance can be either the cause or the consequence of property prices in a neighborhood.
 \end{quote}
 
 \RC{Globally, it is difficult to evaluate the added-value of this research work :
@@ -216,7 +216,7 @@ What was not possible before and what is possible now thanks to this work ?}
 As indicated in the title, the added value of the paper is about identifying urban and socio-economic correlates of property price evolution. These correlated are obtained on the results of the test dataset. The price predictions is relevant to real estate agents in charge of property valuations and to buyers to approximate the real value of a property. This added value has been added in the conclusion as follow:
 
 \begin{quote}
-These results allow an understanding of why some areas have higher prices than others which is a relevant information not only for real estate agents in charge of property valuations but also to buyers in order to approximate the real value of a property.
+These results allow an understanding of why some areas have higher prices than others which is relevant information not only for real estate agents in charge of property valuations but also for buyers in order to estimate the real value of a property.
 \end{quote}
 
 \RC{Typos : Page 1 : « 10395 property »}
@@ -248,18 +248,18 @@ We thank you for your thoughtful and thorough review and we believe your input h
 A precision on the use of artificial neural networks techniques has been added to the manuscript as follow:
 
 \begin{quote}
-Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions (Aragonés, Blanco, \& Estévez, 2007). However, the model obtained from most artificial neural networks are hardly interpretable (Rudin, 2019).
+Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions (Aragonés, Blanco, \& Estévez, 2007). However, the model obtained from most artificial neural networks are difficult to interpret (Rudin, 2019).
 \end{quote}
 
 The limitation of classic models applied to coastal areas is presented as follow:
 
 \begin{quote}
-This problem is known as ``finite area smoothing'' and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which would lead to poorly predicted values (Ramsay, 2002).
+This problem is known as ``finite area smoothing'' and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which can lead to poorly predicted values (Ramsay, 2002).
 \end{quote}
 
 \RC{There are some issues related to the data acquisition process and the possible presence of errors. You noted that errors may occur when the data is being filed, could you provide some calculated information about the quality of the data used based on missing values, incoherent values, etc. Also, property addresses were geocoded relying on OSM geocoder, can you estimate accuracy of the process? The quality of OSM data is usually weak, what are the sources reported on the OSM urban features you extracted (source key: https://wiki.openstreetmap.org/wiki/Key:source)?}
 
-The total amount of property sold in 2018 in the county Dublin which appears in the Property Price Register is 18665. From these, all property corresponding to apartments were removed (10.3\% of the original dataset). Finally, unsuccessfully geocoded properties were also removed from the original dataset (38.0\%) to obtain the 10389 of the final dataset used to identify the urban and socio-economic correlates of property prices.
+In 2018, the Property Price Register references 18665 properties sold in Dublin's area. Among these properties, those corresponding to apartments have been removed from the original dataset in order to evaluate only houses (10.3\% of the properties). Finally, some properties have been unsuccessfully geocoded because of mistakes on their address or because they have not been found (38.0\% of the properties). These properties have also been removed from the original dataset to obtain a final dataset of 10387 properties.
 
 These information have been added as it in the new version of the manuscript.
 
@@ -274,7 +274,7 @@ The github repository has been update to ensure the full reproducibility of the 
 the URLs for the Central Statistics Office and the All-Island Research Observatory have been added to the manuscript.
 
 \begin{quote}
-The results of Irish 2016 census consultation is accessible through both the Central Statistics Office (Office, 2020) and All-Island Research Observatory (Observatory, 2020).
+The results of Irish 2016 census consultation is accessible through both the Central Statistics Office (Central Statistics Office, 2020) and the All-Island Research Observatory (All-Island Research Observatory, 2020) websites.
 \end{quote}
 
 \RC{explicit acronym "SD".}
@@ -287,14 +287,14 @@ The acronym SD has been explicitly introduced in the manuscript.
 
 \hypertarget{refs}{}
 \begin{cslreferences}
+\leavevmode\hypertarget{ref-airo2020}{}%
+All-Island Research Observatory. (2020, June 1). AIRO data store. Retrieved from \url{http://airo.maynoothuniversity.ie/datastore}
+
 \leavevmode\hypertarget{ref-aragones2007neural}{}%
 Aragonés, J. R., Blanco, C., \& Estévez, P. G. (2007). Neural network volatility forecasts. \emph{Intelligent Systems in Accounting, Finance \& Management: International Journal}, \emph{15}(3-4), 107--121.
 
-\leavevmode\hypertarget{ref-airo2020}{}%
-Observatory, A.-I. R. (2020, June 1). AIRO data store. Retrieved from \url{http://airo.maynoothuniversity.ie/datastore}
-
 \leavevmode\hypertarget{ref-cso2020}{}%
-Office, C. S. (2020, June 1). Census 2016 small area population statistics. Retrieved from \url{https://www.cso.ie/en/census/census2016reports/census2016smallareapopulationstatistics/}
+Central Statistics Office. (2020, June 1). Census 2016 small area population statistics. Retrieved from \url{https://www.cso.ie/en/census/census2016reports/census2016smallareapopulationstatistics/}
 
 \leavevmode\hypertarget{ref-ramsay2002spline}{}%
 Ramsay, T. (2002). Spline smoothing over difficult regions. \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, \emph{64}(2), 307--319.
@@ -302,14 +302,14 @@ Ramsay, T. (2002). Spline smoothing over difficult regions. \emph{Journal of the
 \leavevmode\hypertarget{ref-rudin2019stop}{}%
 Rudin, C. (2019). Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead. \emph{Nature Machine Intelligence}, \emph{1}(5), 206--215.
 
+\leavevmode\hypertarget{ref-airo2020}{}%
+All-Island Research Observatory. (2020, June 1). AIRO data store. Retrieved from \url{http://airo.maynoothuniversity.ie/datastore}
+
 \leavevmode\hypertarget{ref-aragones2007neural}{}%
 Aragonés, J. R., Blanco, C., \& Estévez, P. G. (2007). Neural network volatility forecasts. \emph{Intelligent Systems in Accounting, Finance \& Management: International Journal}, \emph{15}(3-4), 107--121.
 
-\leavevmode\hypertarget{ref-airo2020}{}%
-Observatory, A.-I. R. (2020, June 1). AIRO data store. Retrieved from \url{http://airo.maynoothuniversity.ie/datastore}
-
 \leavevmode\hypertarget{ref-cso2020}{}%
-Office, C. S. (2020, June 1). Census 2016 small area population statistics. Retrieved from \url{https://www.cso.ie/en/census/census2016reports/census2016smallareapopulationstatistics/}
+Central Statistics Office. (2020, June 1). Census 2016 small area population statistics. Retrieved from \url{https://www.cso.ie/en/census/census2016reports/census2016smallareapopulationstatistics/}
 
 \leavevmode\hypertarget{ref-ramsay2002spline}{}%
 Ramsay, T. (2002). Spline smoothing over difficult regions. \emph{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}, \emph{64}(2), 307--319.

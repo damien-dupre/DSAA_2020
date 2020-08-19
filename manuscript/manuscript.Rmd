@@ -42,13 +42,13 @@ base::options(
   scipen = 999,
   knitr.kable.NA = " - "
   )
+
 knitr::opts_chunk$set(
   cache.extra = knitr::rand_seed, 
   message = FALSE, 
   warning = FALSE, 
   error = FALSE, 
   echo = FALSE,
-  cache = TRUE,
   fig.retina = 3
   )
 
@@ -118,18 +118,18 @@ st_crs(dublin_sea) <- 4326
 
 First time property acquisition is an important achievement in individuals' lifetime. It provides not only housing security but also the feeling of being a landowner. However, access to the status of landowner is a challenge for low to middle income earners as it corresponds to significant spending which will potentially have budget impacts for years [@savage2014property]. For this reason, understanding property price markets as well as factors driving price is essential to identify investment opportunities.
 
-Beside their inherent characteristics such as size, design and materials [@bourassa2007spatial; @liu2013spatial], property valuation is dictated by multiple external factors explaining their spatial autocorrelation [@basu1998analysis]. Some of these factors are macroeconomic [@antonakakis2016dynamic], related to the evolution of population general wealth while others are related to the characteristics of the neighbourhood [@dubin1998predicting]. These characteristics include the urban and socio economic structure of the neighbourhood [@goodman1998housing]. However, it is difficult to evaluate the influence of such external factors on property valuation [@clapp2002predicting]. By using machine learning algorithms, prediction of property prices has become more and more accurate. Techniques used usually include artificial neural networks due to the volatility of the market [@limsombunchai2004house; @feng2015comparing; @selim2009determinants]. Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions [@aragones2007neural]. However, the model obtained from most artificial neural networks are hardly interpretable [@rudin2019stop]. 
+Beside their inherent characteristics such as size, design and materials [@bourassa2007spatial; @liu2013spatial], property valuation is dictated by multiple external factors explaining their spatial autocorrelation [@basu1998analysis]. Some of these factors are macroeconomic [@antonakakis2016dynamic], related to the evolution of population general wealth while others are related to the characteristics of the neighborhood [@dubin1998predicting]. These characteristics include the urban and socio economic structure of the neighborhood [@goodman1998housing]. However, it is difficult to evaluate the influence of such external factors on property valuation [@clapp2002predicting]. By using machine learning algorithms, prediction of property prices has become more and more accurate. Techniques used usually include artificial neural networks due to the volatility of the market [@limsombunchai2004house; @feng2015comparing; @selim2009determinants]. Indeed, artificial neural network techniques can quickly adjust to volatility changes, therefore incorporating sharp increases or decreases in their predictions [@aragones2007neural]. However, the model obtained from most artificial neural networks are difficult to interpret [@rudin2019stop]. 
 
-In this paper, an alternative machine learning algorithm is used to identify urban and socio-economic correlates of property price evolution in the area of Dublin, Ireland in 2018. Due to the high number of potential features, an eXtreme Gradient Boosting (XGBoost) regression model is believed to obtain the best results with low parameter customisation and high speed [@chen2016xgboost]. Contrary to most artificial neural network techniques, XGBoost is an interpretation-focused method which automatically provides estimates of feature importance from a trained predictive model.
+In this paper, an alternative machine learning algorithm is used to identify urban and socio-economic correlates of property price evolution in the area of Dublin, Ireland in 2018. Due to the high number of potential features, an eXtreme Gradient Boosting (XGBoost) regression model is believed to obtain the best results with low parameter customization and high speed [@chen2016xgboost]. Contrary to most artificial neural network techniques, XGBoost is an interpretation-focused method which automatically provides estimates of feature importance from a trained predictive model.
 
 # Method
 
 Since 2010, under the Irish Property Services (Regulation) Act, all individuals acquiring a property in Ireland have to declare it to Property Services Regulatory Authority (PSRA). They must provide details such as the date of sale, the price and the address of all residential properties purchased in Ireland as declared to the Revenue Commissioners for stamp duty purposes [@rppr2020]. Data is filed electronically by persons doing the conveyancing of the property on behalf of the purchaser, and it must be noted that errors may occur when the data is being filed. 
-Because of the evolution of urban planning and the evolution of socio-economic features measured by the 2016 census, only properties sold in 2018 were processed to avoid potential temporal incoherence. The total amount of property sold in 2018 in the county Dublin which appears in the Property Price Register is `r n_raw`. From these, all property corresponding to apartments were removed (`r scales::percent(1-(n_house/n_raw), accuracy = 0.1)` of the original dataset). Finally, unsuccessfully geocoded properties were also removed from the original dataset (`r scales::percent(1-(n_final/n_house), accuracy = 0.1)`) to obtain the `r n_final` of the final dataset used to identify the urban and socio-economic correlates of property prices.
+Because of the evolution of urban planning and the evolution of socio-economic features measured by the 2016 census, only properties sold in 2018 were processed to avoid potential temporal incoherence. In 2018, the Property Price Register references `r n_raw` properties sold in Dublin's area. Among these properties, those corresponding to apartments have been removed from the original dataset in order to evaluate only houses (`r scales::percent(1-(n_house/n_raw), accuracy = 0.1)` of the properties). Finally, some properties have been unsuccessfully geocoded because of mistakes on their address or because they have not been found (`r scales::percent(1-(n_final/n_house), accuracy = 0.1)` of the properties). These properties have also been removed from the original dataset to obtain a final dataset of `r n_final` properties.
 
 In order to evaluate the spacial distribution of the property sold, property addresses were geocoded (i.e., converted to latitude and longitude) using the Nominatim API [@nominatim2020] to OpenStreetMap data. OpenStreetMap is a collaborative project which aims to create and provide access to free editable maps of the world [@haklay2008openstreetmap]. 
 
-To estimate the geographical distribution of the price density, multiple methods such as multiple regression [@mccluskey2000application] or Bayesian smoothing [@clapp2002predicting] have been employed. While these methods are efficient in a non-restricted space, they have limitations when they are used in coastal areas. This problem is known as "finite area smoothing" and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which would lead to poorly predicted values [@ramsay2002spline]. To deal with the influence of geographical boundaries on price estimation, a generalised additive model using soap film smoothing has been used [@wood2008soap].
+To estimate the geographical distribution of the price density, multiple methods such as multiple regression [@mccluskey2000application] or Bayesian smoothing [@clapp2002predicting] have been employed. While these methods are efficient in a non-restricted space, they have limitations when they are used in coastal areas. This problem is known as "finite area smoothing" and occurs when predictions from a model are approximated across geographical barriers, such as irregular coastal shapes, which can lead to poorly predicted values [@ramsay2002spline]. To deal with the influence of geographical boundaries on price estimation, a generalized additive model using soap film smoothing has been used [@wood2008soap].
 
 ## Distance to urban features
 
@@ -137,7 +137,7 @@ OpenStreetMap combines information about more than 400 urban features including 
 
 ## Density of socio-economic features
 
-In addition to the distance to every urban feature, each property sold in 2018 was related to 48 socio-economic features of the small area including the property, as measured by the Irish census 2016. The results of Irish 2016 census consultation is accessible through both the Central Statistics Office [@cso2020] and All-Island Research Observatory [@airo2020]. The data obtained can be mapped over small area boundaries which are fractions of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the characteristics of each small area; including the proportion of housing types, number of rooms, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area. For anonymisation purposes, the results from small areas having less than five respondents to the census were converted to a proportion of five respondents.
+In addition to the distance to every urban feature, each property sold in 2018 was related to 48 socio-economic features of the small area including the property, as measured by the Irish census 2016. The results of Irish 2016 census consultation is accessible through both the Central Statistics Office [@cso2020] and the All-Island Research Observatory [@airo2020] websites. The data obtained can be mapped over small area boundaries which are fractions of Irish Electoral Division map. The social features extracted are corresponding to population information, religion, carers and health. Economic features correspond to the characteristics of each small area; including the proportion of housing types, number of rooms, occupancy and tenure per small area. Each property is then associated to the value corresponding to its small area. For anonymisation purposes, the results from small areas having less than five respondents to the census were converted to a proportion of five respondents.
 
 ## eXtreme Gradient Boosting
 
@@ -145,7 +145,7 @@ Lastly, an eXtreme Gradient Boosting (XGBoost) model was calculated to examine t
 
 The original dataset has been randomly split to 80% for training and 20% for testing the models. The prediction accuracy is estimated using the coefficient of determination ($R^2$), the Root Mean Square Error ($RMSE$) and the Mean Absolute Error ($MAE$) of the predicted property price values of the test dataset.
 
-Both tree and linear regression based boosting model are used for every of the continuous output learning task in order to compare their accuracy with urban and socio-economic features. As no specific weight or bias in the models has been hypothesized, the parameters of the XGBoost function have been set to the default value. Then, the most accurate model is used to identify the features that are contributing the most to the prediction of property prices. This importance is a measure of the improvement in accuracy brought by a feature based on its coefficient's absolute magnitude.
+Both tree and linear regression based boosting model are used for every of the continuous output learning task in order to compare their accuracy with urban and socio-economic features. As no specific weight or bias in the models have been hypothesized, parameters of the XGBoost algorithms have been kept as default values. Next, the most accurate model is used to identify the features that are contributing most to the prediction of property prices. This contribution (also called "importance") is a measure of the improvement in accuracy brought by a feature. It is based on the absolute magnitude of feature's coefficient.
 
 # Results
 
@@ -231,13 +231,10 @@ data_dublin_2018_features %>%
   )) +
   scale_x_continuous("Price", labels = dollar_format(suffix = "", prefix = "€")) +
   scale_y_continuous("Density") +
-  scale_color_gradient(
-    low = '#3a53a4', 
-    high = '#ed1c24', 
-    ) +
+  scale_color_gradient(low = '#3a53a4', high = '#ed1c24') +
   theme_apa() +
   theme(
-    text = element_text(family = "serif", size = 12),
+    text = element_text(family = "serif", size = 14),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
     legend.position = "none"
@@ -268,7 +265,7 @@ gam_pred %>%
     breaks = seq(53.2, 53.5, 0.1)) +
   theme_classic() +
   theme(
-    text = element_text(family = "serif", size = 12),
+    text = element_text(family = "serif", size = 14),
     legend.position = "none",
     panel.background = element_rect(fill = "grey50")
   )
@@ -391,7 +388,7 @@ Using the XGBoost algorithm with a tree based booster and a tweedie regression w
 
 The overall correlation of the predicted property prices with urban features is shown in Figure \@ref(fig:osm-features-xgb)A. It can be noticed that property prices situated at the low and the high end of the range are the most difficult to predict (Figure \@ref(fig:osm-features-xgb)B). A possible explanation is the absence of distinctive and recurrent patterns in urban features for these properties. However, the prices higher than €300,000 are potentially driving down the prediction accuracy due to outliers.
 
-```{r osm-features-xgb, fig.cap="(ref:osm-features-xgb)", fig.height=7, fig.pos ="!h", out.width="0.98\\columnwidth"}
+```{r osm-features-xgb, fig.cap="(ref:osm-features-xgb)", fig.height=9, fig.pos ="!h", out.width="0.98\\columnwidth"}
 result_accuracy <- result %>%
   ggplot(aes(x = price, y = pred)) +
   geom_point(alpha = 0.1) +
@@ -413,7 +410,7 @@ result_accuracy <- result %>%
   ) +
   theme_apa() +
   theme(
-    text = element_text(family = "serif", size = 12)
+    text = element_text(family = "serif", size = 14)
   ) +
   ggtitle("A")
 
@@ -439,7 +436,7 @@ result_error <- result %>%
   ) +
   theme_apa() +
   theme(
-    text = element_text(family = "serif", size = 12)
+    text = element_text(family = "serif", size = 14)
   ) +
   ggtitle("B")
 
@@ -456,7 +453,7 @@ table_osm <- xgboost::xgb.importance(model = xgmodel) %>%
   tidyr::separate(Feature, c("Feature Category", "Feature Type"), sep = "_")
 ```
 
-By analysing their importance (Table \@ref(tab:osm-features-table)), the most relevant geographical features to predict housing prices are the distance to an embassy (`r table_osm$Importance[1]`) and the distance to natural grasslands such as parks and gardens (`r table_osm$Importance[2]`).
+By analyzing their importance (Table \@ref(tab:osm-features-table)), the most relevant geographical features to predict housing prices are the distance to an embassy (`r table_osm$Importance[1]`) and the distance to natural grasslands such as parks and gardens (`r table_osm$Importance[2]`).
 
 ```{r osm-features-table, results="asis"}
 table_osm %>% 
@@ -584,7 +581,7 @@ lm_result <- lm(pred ~ price, result) %>%
   papaja::apa_print()
 ```
 
-```{r census-features-xgb, fig.cap="(ref:census-features-xgb)", fig.height=7, fig.pos ="!h", out.width="0.98\\columnwidth"}
+```{r census-features-xgb, fig.cap="(ref:census-features-xgb)", fig.height=9, fig.pos ="!h", out.width="0.98\\columnwidth"}
 result_accuracy <- result %>%
   ggplot(aes(x = price, y = pred)) +
   geom_point(alpha = 0.1) +
@@ -605,7 +602,7 @@ result_accuracy <- result %>%
     labels = scales::dollar_format(suffix = "", prefix = "€")
   ) +
   theme_apa() +
-  theme(text = element_text(family = "serif", size = 12)) +
+  theme(text = element_text(family = "serif", size = 14)) +
   ggtitle("A")
 
 result_error <- result %>%
@@ -629,7 +626,7 @@ result_error <- result %>%
     labels = scales::percent
   ) +
   theme_apa() +
-  theme(text = element_text(family = "serif", size = 12)) +
+  theme(text = element_text(family = "serif", size = 14)) +
   ggtitle("B")
 
 result_accuracy / result_error
@@ -689,17 +686,17 @@ table_census %>%
 
 # Discussion
 
-While Dublin is a very specific city due to its low population density spread on a large surface, its housing market is one of the most expensive in Europe. The main reason is the structure of the market, mainly made of residential properties and few apartment buildings. In this study, the prices of `r n_final` properties sold in 2018 in the area of Dublin were analysed from the Property Services Regulatory Authority dataset in order to identify the potential factors correlating with these prices. The enforcement of a housing price registry has been shown as being an essential tool to regulate the housing market [@kitchin2013making]. However, a major limitation of this study is the absence of characteristics for the property itself. Indeed, prices are mainly determined by factors such as the size of the property or the number of rooms. In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, features' importance can be either the cause or the consequence of property prices in a neighborhood. 
+While Dublin is a very specific city due to its low population density spread on a large surface, its housing market is one of the most expensive in Europe. The main reason is the structure of the market, mainly made of residential properties and few apartment buildings. In this study, the prices of `r n_final` properties sold in 2018 in the area of Dublin from the Property Services Regulatory Authority dataset were analyzed in order to identify the potential factors correlating with these prices. The enforcement of a housing price registry has been shown as being an essential tool to regulate the housing market [@kitchin2013making]. However, a major limitation of this study is the absence of characteristics for the property itself. Indeed, prices are mainly determined by factors such as the size of the property or the number of rooms. In addition, while some features appear to be more important than others in their contribution to property prices, these results are not causal. Thus, a feature's importance can be either the cause or the consequence of property prices in a neighborhood
 
 Despite the absence of property characteristics, urban and socio-economic features were used to identify spatial correlates to the housing prices. Results revealed that proximity to embassies and grasslands is a driver of property prices. Embassies are in general located in the most expensive areas of cities which are also the most aesthetically pleasing and the most secure part of cities. In addition, the density of embassies and properties allocated to embassy staff reduces the density of property available on the market and drives their prices up. The distance to a park or a natural area is also a very important factor for property prices. Results also revealed that the density of individual not providing regular unpaid personal help in the area is the most important socio-economic feature to predict property prices. This feature is related to the multiple factors such as the average age of the household or the economic status of the household as they are related to general health [@smith1999healthy]. Large properties in the area and the proportion of individuals reporting having no religion are also relatively important. Again, the size of the property sold was not included in the dataset; however, the higher the density of large properties in the area, the higher the probability for the property to be a large property. Finally, the relation with the expression of religious belief, or more precisely its absence, is a very interesting feature. Again, the relationship between religion and income is not confirmed by the literature. Whereas some studies reveal a positive correlation between religion and income [@guiso2003people; @elgin2013religion] others reveals no evidence of such relationship [@de2008does]. Here, it appears that prices of properties are higher in areas with a high density of people indicating that they have no religion.
 
 # Conclusion
 
-The evolution of housing prices is a pressing issue in most European capitals and specially in Dublin. Given their significant increase, properties are less and less affordable for individuals. By preforming a feature analysis with urban and socio-economic features, it is possible to evaluate and predict the potential price of a property. Indeed features such as the presence of embassies or parks are criteria that influence significantly the price of properties. Similarly, the characteristics of inhabitants in the area such as religion, health and age is correlated to the evolution of housing prices. These results allow an understanding of why some areas have higher prices than others which is a relevant information not only for real estate agents in charge of property valuations but also to buyers in order to approximate the real value of a property.
+The evolution of housing prices is a pressing issue in most European capitals and specially in Dublin. Given their significant increase, properties are less and less affordable for individuals. By preforming a feature analysis with urban and socio-economic features, it is possible to evaluate and predict the potential price of a property. Indeed features such as the presence of embassies or parks are criteria that influence significantly the price of properties. Similarly, the characteristics of inhabitants in the area such as religion, health and age is correlated to the evolution of housing prices. These results allow an understanding of why some areas have higher prices than others which is relevant information not only for real estate agents in charge of property valuations but also for buyers in order to estimate the real value of a property.
 
 # Acknowledgement
 
-The authors would like to thank the developers of the following R packages used to process, analyse, display and report data: `r papaja::cite_r(file = "bib/r-references.bib")`.
+The authors would like to thank the developers of the following R packages used to process, analyze, display and report data: `r papaja::cite_r(file = "bib/r-references.bib")`.
 
 # Data availability
 

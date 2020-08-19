@@ -158,12 +158,6 @@ gam_density <- function (x, view = NULL, cond = list(), n.grid = 40, too.far = 0
     )
 }
 ################################################################################
-read_join <- function(file_name){
-  file.path(data_path, "aero_data", file_name) %>% 
-    readr::read_csv(col_types = list(GEOG_ID = col_character())) %>% 
-    dplyr::filter(GEOG_ID %in% list_geogid)
-}
-################################################################################
 xgboost_all_parameters <- function(booster_parameter, objective_parameter){
   if (booster_parameter == "gbtree") {
     xgboost::xgboost(
