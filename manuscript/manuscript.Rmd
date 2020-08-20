@@ -12,7 +12,7 @@ affiliation:
       author:
         - name: Damien Dupré
         
-keywords: ["Property price", "Housing Market", "Feature Analysis", "Machine Learning", "Geocoding"]
+keywords: ["Property Price", "Housing Market", "Feature Analysis", "Machine Learning", "Geocoding"]
 abstract: |
   Understanding the characteristics of the housing market is essential for both sellers and buyers. However, the housing market is influenced by multiple factors. In this paper, the urban and socio-economic structure of an area is used to predict the price of 10387 properties sold in 2018 in the city of Dublin. More precisely, the direct distance from each property to 160 urban features taken from OpenStreetMap is calculated, and an extreme gradient boosting linear regression performed. Using these features, the model explains 45\% of the housing price variance. The most important features in this model are the proximity to an embassy and to a grassland. In addition, the results of a population census from 2016 are also used to correlate with the price of properties. From this census, 48 features are used as the input of a gradient boost linear regression model. In all, the socio-economic features are explaining 43\% of the housing price variance as well. The density of individuals reporting that they are not providing unpaid personal help for a friend or family member as well as individuals reporting that they have no religion are the most important socio-economic feratures. By taking into account either urban or socio-economic features, it is possible to accurately estimate housing prices and to predict their evolution.
 
