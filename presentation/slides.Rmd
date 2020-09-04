@@ -1,0 +1,101 @@
+---
+title: "Urban and socio-economic correlates of property prices in Dublin's area"
+subtitle: |
+"The 7th IEEE International Conference on Data Science and Advanced Analytics"
+"Special Session: Environmental and Geo-spatial Data Analytics (EnGeoData)"
+author: "Damien Dupré"
+date: "Dublin City University - October 6th, 2020"
+output:
+  xaringan::moon_reader:
+    css: ["default", "metropolis", "metropolis-fonts", "css/custom_design.css"]
+    lib_dir: libs
+    nature:
+      beforeInit: "libs/cols_macro.js"
+      highlightStyle: zenburn
+      highlightLines: true
+      countIncrementalSlides: false
+params:
+  eval_rights: FALSE
+---
+
+```{r setup, include = FALSE}
+# general options --------------------------------------------------------------
+options(scipen = 999)
+set.seed(123)
+# chunk options ----------------------------------------------------------------
+knitr::opts_chunk$set(
+  cache.extra = knitr::rand_seed, 
+  message = FALSE, 
+  warning = FALSE, 
+  error = FALSE, 
+  echo = FALSE,
+  cache = FALSE,
+  comment = "", 
+  fig.align = "center", 
+  fig.retina = 3
+  )
+# libraries --------------------------------------------------------------------
+library(tidyverse)
+library(fontawesome)
+```
+
+layout: true
+  
+<div class="custom-footer"><span>DSAA EnGeoData - Dupré (2020) </span></div>
+
+---
+
+# My Journey into Data Science
+
+#### Developement of the DynEmo Facial Expression Database (Master)
+
+* Dynamic and spontaneous emotions
+* Assessed with self-reports and by observers
+
+#### Analysis of Emotional User Experience of Innovative Tech. (Industrial PhD)
+
+* Understand users' acceptance of technologies from their emotional response
+* Based on multivariate self-reports
+
+#### Evaluation of Emotions from Facial and Physiological Measures (Industrial PostDoc)
+
+* Applications to marketing, sports and automotive industries
+* Dynamic changes with trend extraction techniques (2 patents)
+
+#### Performance Prediction using Machine Learning (Academic PostDoc)
+
+* Application to sport analytics
+* Big Data treatment (> 1 million users with activities recorded in the past 5 years)
+
+---
+class: inverse, mline, center, middle
+
+# 1. A Closer Look at Property Prices
+
+---
+
+# Market Characteristics
+
+An housing market is endemic to a country in a specific context.
+
+Countries are very different in term of:
+- Styles
+- Materials
+- Legislations
+- Urban features
+- Population characteristics
+#https://www.visualcapitalist.com/mapped-the-countries-with-the-highest-housing-bubble-risks/
+
+![Plot title. ](slides_insertimage_1.png)
+
+---
+class: inverse, mline, left, middle
+
+<img class="circle" src="https://github.com/damien-dupre.png" width="250px"/>
+
+# Thanks for your attention, find me at...
+
+[`r fa(name = "twitter")` @damien_dupre](http://twitter.com/damien_dupre)  
+[`r fa(name = "github")` @damien-dupre](http://github.com/damien-dupre)  
+[`r fa(name = "link")` damien-datasci-blog.netlify.app](https://damien-datasci-blog.netlify.app)  
+[`r fa(name = "paper-plane")` damien.dupre@dcu.ie](mailto:damien.dupre@dcu.ie)

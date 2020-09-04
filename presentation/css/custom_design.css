@@ -1,0 +1,69 @@
+.remark-code, .remark-inline-code {
+   font-family: 'Fira Mono', 'Lucida Console', Monaco, monospace;
+   font-size: 80%;
+}
+
+.split-three>.column:first-of-type {width: 33.33333333333%; height:100%; position: absolute; top: 0; left: 0; }
+.split-three>.column:nth-of-type(2) {width: 33.33333333333%; height:100%; position: absolute; top: 0; left: 33.33333333333%;}
+.split-three>.column:nth-of-type(3) {width: 33.33333333333%; height:100%; position: absolute; top: 0; right: 0;}
+
+.split-three>.row:first-of-type {height: 33.33333333333%; width:100%; position: absolute; top: 0; left: 0; }
+.split-three>.row:nth-of-type(2) {height: 33.33333333333%; width:100%; position: absolute; left: 0; top: 33.33333333333%;}
+.split-three>.row:nth-of-type(3) {height: 33.33333333333%; width:100%; position: absolute; bottom: 0; left: 0;}
+
+.remark-code-line-highlighted     { background-color: #4d4d4d; }
+
+
+/* footer */
+
+div.custom-footer {
+    background-color: #1a1917;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    height: 20px;
+    width: 100%;
+}
+
+div.custom-footer span {
+    font-size: 10pt;
+    color: #F7F8FA;
+    position: absolute;
+    left: 15px;
+    bottom: 2px;
+}
+
+.remark-slide-number {
+  bottom: 18px;
+  opacity: 0.5;
+  position: absolute;
+  right: 20px;
+}
+
+img.circle {
+  border-radius:50%;
+}
+
+.tiny{font-size: 50%}
+
+.small{font-size: 80%}
+
+/* Required: Clear floats after the columns */
+.multicolrow:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/*Optional: Color header boxes*/
+.multicolhead {
+    background-color:#4B9CD3;
+    color: #FFFFFF;
+}
+
+.wordwrap { 
+   white-space: pre-wrap;      /* CSS3 */   
+   white-space: -moz-pre-wrap; /* Firefox */   
+   white-space: -o-pre-wrap;   /* Opera 7 */    
+   word-wrap: break-word;      /* IE */
+}
